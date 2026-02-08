@@ -1,0 +1,516 @@
+<template>
+  <div class="main-layout" @mousemove="handleMouseMove" @mouseup="handleMouseUp" @mouseleave="handleMouseUp">
+    <!-- 侧边栏 -->
+    <aside 
+      class="sidebar-container" 
+      :class="{ 'is-collapsed': collapsed }"
+      :style="{ width: collapsed ? '64px' : sidebarWidth + 'px' }"
+    >
+      <div class="sidebar-header">
+        <div class="logo" v-if="!collapsed" @click="$router.push('/')">
+          <el-icon :size="32" color="#1E5EB8"><Folder /></el-icon>
+          <span class="logo-text">项目管理</span>
+        </div>
+        <el-icon :size="20" @click="collapsed = !collapsed" class="collapse-btn">
+          <Fold v-if="!collapsed" />
+          <Expand v-else />
+        </el-icon>
+      </div>
+      
+      <el-menu
+        :default-active="currentRoute"
+        :collapse="collapsed"
+        router
+        class="sidebar-menu"
+      >
+        <el-menu-item index="/">
+          <el-icon><Odometer /></el-icon>
+          <template #title>仪表盘</template>
+        </el-menu-item>
+        
+        <el-menu-item index="/projects">
+          <el-icon><Folder /></el-icon>
+          <template #title>项目</template>
+        </el-menu-item>
+        
+        <el-menu-item index="/planning">
+          <el-icon><Document /></el-icon>
+          <template #title>计划管理</template>
+        </el-menu-item>
+        
+        <el-menu-item index="/resources">
+          <el-icon><User /></el-icon>
+          <template #title>资源</template>
+        </el-menu-item>
+        
+        <el-menu-item index="/reports">
+          <el-icon><DataAnalysis /></el-icon>
+          <template #title>报表</template>
+        </el-menu-item>
+        
+        <el-menu-item index="/approvals">
+          <el-icon><Stamp /></el-icon>
+          <template #title>审批</template>
+        </el-menu-item>
+        
+        <el-menu-item index="/settings">
+          <el-icon><Setting /></el-icon>
+          <template #title>设置</template>
+        </el-menu-item>
+      </el-menu>
+      
+      <!-- 收起后的Logo -->
+      <div class="sidebar-footer" v-if="collapsed">
+        <el-icon :size="24" color="#1E5EB8"><Folder /></el-icon>
+      </div>
+    </aside>
+    
+    <!-- 拖拽调整手柄 -->
+    <div 
+      class="resize-handle" 
+      @mousedown="handleMouseDown"
+      :class="{ 'is-collapsed': collapsed }"
+    >
+      <el-icon class="resize-icon"><MoreFilled /></el-icon>
+    </div>
+    
+    <!-- 主内容区 -->
+    <div class="main-wrapper">
+      <!-- 顶部导航 -->
+      <header class="header-container">
+        <div class="header-left">
+          <el-breadcrumb separator="/">
+            <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+            <el-breadcrumb-item>{{ currentPageTitle }}</el-breadcrumb-item>
+          </el-breadcrumb>
+        </div>
+        
+        <div class="header-right">
+          <!-- 全局搜索框 -->
+          <div class="global-search">
+            <el-input
+              v-model="searchKeyword"
+              placeholder="搜索项目、任务、问题..."
+              :prefix-icon="Search"
+              clearable
+              size="default"
+              @keyup.enter="handleSearch"
+              @clear="handleClear"
+              class="search-input"
+            />
+            <div class="search-dropdown" v-if="showSearchResults && searchKeyword">
+              <div class="search-results">
+                <div class="search-section">
+                  <div class="search-section-title">项目</div>
+                  <div class="search-item" v-for="p in searchResults.projects" :key="p.id" @click="goToProject(p.id)">
+                    <el-icon><Folder /></el-icon>
+                    <span>{{ p.name }}</span>
+                  </div>
+                  <div class="search-empty" v-if="!searchResults.projects.length">暂无结果</div>
+                </div>
+                <div class="search-section">
+                  <div class="search-section-title">任务</div>
+                  <div class="search-item" v-for="t in searchResults.tasks" :key="t.id" @click="goToTask(t.id)">
+                    <el-icon><Tickets /></el-icon>
+                    <span>{{ t.title }}</span>
+                  </div>
+                  <div class="search-empty" v-if="!searchResults.tasks.length">暂无结果</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <el-dropdown trigger="click">
+            <div class="user-dropdown">
+              <el-avatar :size="32" src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" />
+              <span class="username">张经理</span>
+              <el-icon><ArrowDown /></el-icon>
+            </div>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item>个人中心</el-dropdown-item>
+                <el-dropdown-item>设置</el-dropdown-item>
+                <el-dropdown-item divided>退出登录</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+          
+          <!-- 文档入口 -->
+          <el-button :icon="QuestionFilled" circle @click="$router.push('/docs')" title="帮助与文档" />
+        </div>
+      </header>
+      
+      <!-- 页面内容 -->
+      <main class="main-content">
+        <router-view />
+      </main>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import {
+  Folder, Odometer, Document, User, DataAnalysis,
+  Stamp, Setting, Bell, ArrowDown, Fold, Expand, Search, Tickets, MoreFilled, QuestionFilled
+} from '@element-plus/icons-vue'
+
+const route = useRoute()
+const router = useRouter()
+const collapsed = ref(false)
+const searchKeyword = ref('')
+const showSearchResults = ref(false)
+
+// 侧边栏宽度拖拽
+const sidebarWidth = ref(240)
+const minSidebarWidth = 160
+const maxSidebarWidth = 400
+const isResizing = ref(false)
+const startX = ref(0)
+const startWidth = ref(0)
+
+const handleMouseDown = (e) => {
+  if (collapsed.value) return
+  isResizing.value = true
+  startX.value = e.clientX
+  startWidth.value = sidebarWidth.value
+  document.body.style.cursor = 'col-resize'
+  document.body.style.userSelect = 'none'
+}
+
+const handleMouseMove = (e) => {
+  if (!isResizing.value) return
+  const diff = e.clientX - startX.value
+  sidebarWidth.value = Math.min(Math.max(startWidth.value + diff, minSidebarWidth), maxSidebarWidth)
+}
+
+const handleMouseUp = () => {
+  if (isResizing.value) {
+    isResizing.value = false
+    document.body.style.cursor = ''
+    document.body.style.userSelect = ''
+  }
+}
+
+// 收起时重置宽度
+watch(collapsed, (val) => {
+  if (val) {
+    sidebarWidth.value = 64
+  } else {
+    sidebarWidth.value = 240
+  }
+})
+
+// 模拟搜索结果（实际对接后端API）
+const searchResults = computed(() => {
+  if (!searchKeyword.value) return { projects: [], tasks: [] }
+  
+  // 模拟数据
+  const keyword = searchKeyword.value.toLowerCase()
+  return {
+    projects: [
+      { id: 1, name: '企业项目管理系统 V1.0' },
+      { id: 2, name: '技术架构升级项目' }
+    ].filter(p => p.name.toLowerCase().includes(keyword)),
+    tasks: [
+      { id: 1, title: '完成需求文档编写' },
+      { id: 2, title: '评审技术方案' }
+    ].filter(t => t.title.toLowerCase().includes(keyword))
+  }
+})
+
+const handleSearch = () => {
+  if (searchKeyword.value) {
+    showSearchResults.value = true
+  }
+}
+
+const handleClear = () => {
+  searchKeyword.value = ''
+  showSearchResults.value = false
+}
+
+const goToProject = (id) => {
+  router.push(`/projects/${id}`)
+  showSearchResults.value = false
+  searchKeyword.value = ''
+}
+
+const goToTask = (id) => {
+  // 跳转到任务详情
+  showSearchResults.value = false
+  searchKeyword.value = ''
+}
+
+// 点击外部关闭搜索结果
+watch(() => route.path, () => {
+  showSearchResults.value = false
+})
+
+const currentRoute = computed(() => route.path)
+const currentPageTitle = computed(() => route.meta.title || '页面')
+
+// 菜单配置
+const menuItems = [
+  { path: '/', icon: Odometer, title: '仪表盘' },
+  { path: '/projects', icon: Folder, title: '项目' },
+  { path: '/planning', icon: Document, title: '计划管理' },
+  { path: '/resources', icon: User, title: '资源' },
+  { path: '/reports', icon: DataAnalysis, title: '报表' },
+  { path: '/approvals', icon: Stamp, title: '审批' },
+  { path: '/tasks/board', icon: Tickets, title: '任务看板' },
+  { path: '/settings', icon: Setting, title: '设置' }
+]
+</script>
+
+<style scoped>
+.main-layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.sidebar-container {
+  width: 240px;
+  min-width: 64px;
+  background: #FFFFFF;
+  border-right: 1px solid #F0F0F0;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s, min-width 0.3s;
+  position: relative;
+  z-index: 10;
+}
+
+.sidebar-container.is-collapsed {
+  width: 64px;
+  min-width: 64px;
+}
+
+.sidebar-header {
+  height: 64px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #F0F0F0;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.logo-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #262626;
+  white-space: nowrap;
+}
+
+.collapse-btn {
+  cursor: pointer;
+  color: #8C8C8C;
+  flex-shrink: 0;
+}
+
+.collapse-btn:hover {
+  color: #1E5EB8;
+}
+
+.sidebar-menu {
+  flex: 1;
+  border-right: none;
+  padding: 8px 0;
+  overflow-y: auto;
+}
+
+.sidebar-menu:not(.el-menu--collapse) {
+  width: 100%;
+}
+
+.sidebar-footer {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid #F0F0F0;
+}
+
+/* 拖拽调整手柄 */
+.resize-handle {
+  width: 6px;
+  height: 100vh;
+  background: transparent;
+  cursor: col-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  position: relative;
+  z-index: 20;
+}
+
+.resize-handle:hover {
+  background: #1E5EB8;
+}
+
+.resize-handle.is-collapsed {
+  cursor: default;
+}
+
+.resize-handle.is-collapsed:hover {
+  background: transparent;
+}
+
+.resize-icon {
+  color: #BFBFBF;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.resize-handle:hover .resize-icon {
+  opacity: 1;
+}
+
+.resize-handle.is-collapsed .resize-icon {
+  opacity: 0;
+}
+
+.main-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.header-container {
+  height: 64px;
+  background: #FFFFFF;
+  border-bottom: 1px solid #F0F0F0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* 全局搜索框 */
+.global-search {
+  position: relative;
+  width: 280px;
+}
+
+.search-input {
+  width: 100%;
+}
+
+.search-input :deep(.el-input__wrapper) {
+  background: #F5F7FA;
+  border: none;
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.search-input :deep(.el-input__inner) {
+  background: transparent;
+  color: #262626;
+}
+
+.search-input :deep(.el-input__inner::placeholder) {
+  color: #8C8C8C;
+}
+
+.search-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 8px;
+  background: #FFFFFF;
+  border: 1px solid #E4E7ED;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.search-results {
+  padding: 8px;
+}
+
+.search-section {
+  margin-bottom: 8px;
+}
+
+.search-section:last-child {
+  margin-bottom: 0;
+}
+
+.search-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #8C8C8C;
+  padding: 4px 8px;
+}
+
+.search-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #262626;
+}
+
+.search-item:hover {
+  background: #F5F7FA;
+}
+
+.search-empty {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #BFBFBF;
+}
+
+.notification-badge {
+  cursor: pointer;
+}
+
+.user-dropdown {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.username {
+  font-size: 14px;
+  color: #262626;
+}
+
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  background: #F5F7FA;
+  padding: 24px;
+}
+</style>
