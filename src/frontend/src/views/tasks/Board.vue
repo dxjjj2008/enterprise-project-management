@@ -101,8 +101,8 @@
                     <el-icon class="task-action-btn"><MoreFilled /></el-icon>
                     <template #dropdown>
                       <el-dropdown-menu>
-                        <el-dropdown-item command="edit" aria-label="编辑" aria-label="编辑任务">编辑</el-dropdown-item>
-                        <el-dropdown-item command="delete" aria-label="删除" aria-label="删除任务" divided>删除</el-dropdown-item>
+                        <el-dropdown-item command="edit" aria-label="编辑任务">编辑</el-dropdown-item>
+                        <el-dropdown-item command="delete" aria-label="删除任务" divided>删除</el-dropdown-item>
                       </el-dropdown-menu>
                     </template>
                   </el-dropdown>

@@ -101,18 +101,18 @@
             <el-progress :percentage="row.progress" :stroke-width="6" />
           </template>
         </el-table-column>
-<el-table-column prop="members" label="成员" width="150">
-           <template #default="{ row }">
-             <div class="table-members">
-               <el-avatar
-                 v-for="member in row.members.slice(0, 3)"
-                 :key="member"
-                 :size="24"
-               />
-             </div>
-           </template>
-         </el-table-column>
-         <el-table-column prop="endDate" label="截止日期" width="120" />
+        <el-table-column prop="members" label="成员" width="150">
+          <template #default="{ row }">
+            <div class="table-members">
+              <el-avatar
+                v-for="member in row.members.slice(0, 3)"
+                :key="member"
+                :size="24"
+              />
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="endDate" label="截止日期" width="120" />
          <el-table-column label="操作" width="180" fixed="right">
            <template #default="{ row }">
              <el-button type="primary" link size="small" @click="goToDetail(row.id)">详情</el-button>
@@ -164,108 +164,6 @@
  </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
-import { ElMessage } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
-import { getProjects, createProject, updateProject, deleteProject } from '@/api/projects'
-
-const projects = ref([])
-const loading = ref(false)
-
-// 表单相关
-const formVisible = ref(false)
-const isEdit = ref(false)
-const submitLoading = ref(false)
-
-const projectForm = reactive({
-  id: null,
-  name: '',
-  description: '',
-  ownerId: '',
-  status: 'planning'
-})
-
-// 加载项目数据
-const loadProjects = async () => {
-  loading.value = true
-  try {
-    const response = await getProjects(1, 20)
-    projects.value = response.data || []
-  } catch (error) {
-    console.error('加载项目失败:', error)
-  } finally {
-    loading.value = false
-  }
-}
-
-// 打开新建对话框
-const openCreateDialog = () => {
-  isEdit.value = false
-  Object.assign(projectForm, {
-    id: null,
-    name: '',
-    description: '',
-    ownerId: '',
-    status: 'planning'
-  })
-  formVisible.value = true
-}
-
-// 提交表单
-const submitForm = async () => {
-  submitLoading.value = true
-  try {
-    if (isEdit.value) {
-      await updateProject(projectForm.id, projectForm)
-      ElMessage.success('项目更新成功')
-    } else {
-      await createProject(projectForm)
-      ElMessage.success('项目创建成功')
-    }
-    formVisible.value = false
-    loadProjects()
-  } catch (error) {
-    console.error('操作失败:', error)
-    ElMessage.error('操作失败，请重试')
-  } finally {
-    submitLoading.value = false
-  }
-}
-
-// 删除项目
-const handleDelete = async (id) => {
-  try {
-    await deleteProject(id)
-    ElMessage.success('项目删除成功')
-    loadProjects()
-  } catch (error) {
-    console.error('删除失败:', error)
-    ElMessage.error('删除失败，请重试')
-  }
-}
-
-// 跳转到详情页
-const goToDetail = (id) => {
-  window.location.href = `/projects/${id}`
-}
-
-// 获取状态类型
-const getStatusType = (status) => {
-  const map = { active: '', completed: 'success', planning: 'info', archived: 'info' }
-  return map[status] || ''
-}
-
-// 获取状态标签
-const getStatusLabel = (status) => {
-  const map = { active: '进行中', completed: '已完成', planning: '规划中', archived: '已归档' }
-  return map[status] || status
-}
-
-// 在组件挂载时加载项目
-onMounted(() => {
-  loadProjects()
-})
-</script>
 import { ref, computed, onMounted, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Plus, Grid, List, MoreFilled } from '@element-plus/icons-vue'

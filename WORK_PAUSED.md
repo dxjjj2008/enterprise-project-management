@@ -375,4 +375,40 @@ git push origin main
 
 ---
 
-**状态：** ✅ CI/CD 自动部署配置完成 (2026-02-09 13:00)
+## ✅ 资源管理功能 FE-10 完成 (2026-02-09 14:30)
+
+### 创建的文件
+
+| 文件 | 说明 |
+|------|------|
+| `src/backend/app/api/v1/resources.py` | 资源管理API（用户、工作量、利用率） |
+| `src/frontend/src/api/resources.ts` | 前端资源API客户端 |
+| `src/frontend/src/views/resources/Index.vue` | 资源管理页面（9.2KB） |
+
+### API 端点
+
+| 端点 | 方法 | 说明 |
+|------|------|------|
+| `/api/v1/resources/users` | GET | 用户列表 |
+| `/api/v1/resources/users/{user_id}` | GET | 用户详情 |
+| `/api/v1/resources/workload` | GET | 团队工作量 |
+| `/api/v1/resources/utilization` | GET | 资源利用率 |
+
+### 前端功能
+
+- **统计卡片**：用户总数、活跃用户、平均利用率
+- **工作量视图**：按部门/项目筛选，展示任务分布
+- **成员列表**：可展开查看用户详情
+- **利用率视图**：进度条展示个人/团队利用率
+- **用户详情抽屉**：基本信息、任务统计、技能标签
+
+### Git 提交
+
+```
+a14d477 feat: 添加资源管理功能 (FE-10)
+ea3ff8f feat: 添加 CI/CD 自动部署配置
+```
+
+### 状态：**✅ FE-10 资源管理功能完成，GitHub推送成功**
+
+
