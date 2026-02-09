@@ -991,3 +991,274 @@ volumes:
 | 2026-02-08 | v1.0 | 初始设计方案 |
 | 2026-02-08 | v1.1 | 补充安全机制、API规范、新增项目目标/交付物/里程碑/风险/问题表 |
 | 2026-02-08 | v1.2 | 补充 UI/UX 设计规范（18个核心页面、设计系统、组件规范） |
+
+---
+
+## 3.1.5 无障碍性架构
+
+### 3.1.5.1 架构概述
+
+系统采用模块化、可扩展的架构设计，确保无障碍性功能贯穿整个生命周期。
+
+**核心原则**：
+- 无障碍性从设计阶段开始
+- 全栈无障碍支持
+- 持续集成测试
+- 渐进式增强
+
+### 3.1.5.2 技术栈
+
+#### 前端无障碍技术
+```javascript
+// Vue 3 + Composition API
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { useRouter } from 'vue-router'
+
+// ARIA 属性管理
+const ariaLabel = computed(() => {
+  return `数量：${count}个`
+})
+
+// 键盘事件处理
+const handleKeydown = (event) => {
+  switch (event.key) {
+    case 'Enter': handleAction(); break
+    case 'Escape': handleEscape(); break
+  }
+}
+```
+
+#### 工具链
+- **axe-core** - WCAG 2.1 AA 自动化测试
+- **Lighthouse** - 浏览器无障碍审计
+- **WAVE** - 在线无障碍检查工具
+- **色彩对比度检查器** - 检查对比度
+
+### 3.1.5.3 模块设计
+
+#### 3.1.5.3.1 无障碍组件库
+
+```typescript
+// 无障碍组件接口
+interface AccessibleComponent {
+  role: string
+  ariaLabel?: string
+  ariaHidden?: boolean
+  ariaDescription?: string
+  tabIndex?: number
+  onKeyDown?: (event: KeyboardEvent) => void
+}
+
+// 组件实现
+export const AccessibleButton: AccessibleComponent = {
+  role: 'button',
+  ariaLabel: props.label,
+  onKeyDown: (event) => {
+    if (event.key === 'Enter' || event.key === 'Space') {
+      handleClick()
+    }
+  }
+}
+```
+
+#### 3.1.5.3.2 焦点管理模块
+
+```javascript
+// 焦点管理服务
+class FocusManager {
+  // 焦点顺序
+  focusableElements: Element[] = []
+
+  // 聚焦第一个可聚焦元素
+  focusFirst() {
+    const first = this.focusableElements[0]
+    if (first) first.focus()
+  }
+
+  // 焦点陷阱
+  trapFocus(container: HTMLElement) {
+    const focusableElements = container.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1")]' +
+      ':not([tabindex="-1")]'
+    )
+  }
+}
+
+// 全局焦点管理
+const focusManager = new FocusManager()
+```
+
+#### 3.1.5.3.3 键盘导航模块
+
+```javascript
+// 键盘导航服务
+class KeyboardService {
+  shortcuts: Record<string, () => void> = {
+    'Ctrl+K': () => searchFocus(),
+    'Ctrl+N': () => createNew(),
+    'Alt+D': () => router.push('/dashboard'),
+    'Esc': () => handleEscape()
+  }
+
+  register() {
+    window.addEventListener('keydown', (e) => {
+      // 如果焦点在输入框，不触发快捷键
+      if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+        return
+      }
+
+      // 按键映射
+      let key = e.key
+      if (e.ctrlKey) key = `Ctrl+${key}`
+      if (e.altKey) key = `Alt+${key}`
+
+      if (this.shortcuts[key]) {
+        e.preventDefault()
+        this.shortcuts[key]()
+      }
+    })
+  }
+}
+
+// 键盘导航实现
+const keyboardService = new KeyboardService()
+keyboardService.register()
+```
+
+#### 3.1.5.3.4 ARIA 属性管理
+
+```javascript
+// ARIA 属性生成器
+const generateARIA = (options: {
+  role?: string
+  label?: string
+  description?: string
+  hidden?: boolean
+}) => {
+  return {
+    role: options.role || 'button',
+    'aria-label': options.label,
+    'aria-describedby': options.description,
+    'aria-hidden': options.hidden
+  }
+}
+
+// 使用 ARIA
+const buttonProps = generateARIA({
+  role: 'button',
+  label: '保存按钮'
+})
+```
+
+### 3.1.5.4 数据库设计
+
+#### 3.1.5.4.1 无障碍配置
+
+```sql
+-- 无障碍配置表
+CREATE TABLE accessibility_configs (
+    id INTEGER PRIMARY KEY,
+    feature_name VARCHAR(100) NOT NULL,
+    feature_value TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 无障碍规则配置
+INSERT INTO accessibility_configs VALUES 
+    (1, 'enable_keyboard_navigation', 'true'),
+    (2, 'enable_screen_reader', 'true'),
+    (3, 'keyboard_shortcuts', '{"ctrl_k": "search", "ctrl_n": "create"}'),
+    (4, 'focus_order', 'main_menu,search,content,sidebar,footer'),
+    (5, 'color_contrast', 'wcag_aa');
+```
+
+### 3.1.5.5 安全机制
+
+#### 3.1.5.5.1 焦点安全
+
+```javascript
+// 焦点安全检查
+function focusSecurityCheck(container: HTMLElement) {
+  const focusable = container.querySelectorAll(
+    'button, [href], input, select, textarea'
+  )
+  
+  if (focusable.length === 0) {
+    console.warn('No focusable elements in container')
+    return false
+  }
+  
+  return true
+}
+```
+
+### 3.1.5.6 测试架构
+
+#### 3.1.5.6.1 单元测试
+
+```python
+# tests/test_accessibility.py
+
+def test_keyboard_navigation():
+    """测试键盘导航功能"""
+    assert keydown_events.includes('Enter')
+    assert keydown_events.includes('Escape')
+
+def test_aria_attributes():
+    """测试ARIA属性"""
+    assert button.role == 'button'
+    assert button['aria-label'] == 'Save'
+    assert button.tabIndex == 0
+
+def test_color_contrast():
+    """测试颜色对比度"""
+    assert calculate_contrast('#262626', '#FFFFFF') >= 4.5
+    assert calculate_contrast('#595959', '#FFFFFF') >= 4.5
+```
+
+### 3.1.5.7 性能优化
+
+#### 3.1.5.7.1 焦点性能
+
+```javascript
+// 焦点性能优化
+const focusPerformance = {
+  // 使用 requestAnimationFrame
+  focusWithAnimation(element) {
+    requestAnimationFrame(() => {
+      element.focus({ preventScroll: true })
+    })
+  }
+}
+```
+
+### 3.1.5.8 监控和日志
+
+#### 3.1.5.8.1 无障碍指标
+
+```javascript
+// 无障碍监控
+const accessibilityMetrics = {
+  // 焦点覆盖率
+  focusCoverage: 0.95,
+  
+  // ARIA 属性覆盖率
+  ariaCoverage: 0.90,
+  
+  // 键盘导航覆盖率
+  keyboardCoverage: 0.95,
+  
+  // 对比度标准符合率
+  contrastCompliance: 0.98
+}
+```
+
+---
+
+## 变更记录
+
+| 日期 | 版本 | 变更内容 |
+|------|------|---------|
+| 2026-02-08 | v1.0 | 初始架构设计 |
+| 2026-02-08 | v1.1 | 新增 3.1.5 章节：无障碍性架构 |
+

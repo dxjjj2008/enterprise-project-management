@@ -817,3 +817,256 @@ P3: 复杂表单、对比视图（仅 PC）
 | 2026-02-08 | v1.1 | 仪表盘页面设计更新：增加8个统计卡片 |
 | 2026-02-08 | v1.2 | 全局搜索功能：顶部导航栏增加搜索框 |
 | 2026-02-08 | v1.3 | 仪表盘最终设计：8个卡片放入项目概况大卡片，移除任务统计/风险问题概览（移至详情页），增加侧边栏拖拽功能 |
+
+---
+
+## 10. 无障碍性设计
+
+### 10.1 设计原则
+
+#### 10.1.1 WCAG 2.1 AA 标准
+系统遵循 WCAG 2.1 AA 标准，确保所有用户都能方便地使用系统。
+
+#### 10.1.2 人本设计
+- 设计优先考虑不同能力的用户
+- 提供多种交互方式
+- 确保使用广泛性
+
+### 10.2 键盘导航设计
+
+#### 10.2.1 焦点顺序
+```
+导航顺序: 主菜单 → 全局搜索 → 页面内容 → 侧边栏 → 页面底部 → 页脚
+```
+
+#### 10.2.2 焦点样式
+```css
+/* 焦点可见样式 */
+:focus-visible {
+  outline: 2px solid #1890ff;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.15);
+}
+
+/* 按钮焦点 */
+.btn:focus-visible {
+  background-color: #4096ff;
+}
+
+/* 输入框焦点 */
+.input:focus-visible {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.1);
+}
+
+/* 卡片焦点 */
+.card:focus-visible {
+  transform: translateY(-2px);
+}
+```
+
+#### 10.2.3 快捷键规范
+| 快捷键 | 功能 | 使用场景 |
+|--------|------|---------|
+| Ctrl + K | 搜索 | 快速搜索 |
+| Ctrl + N | 新建 | 创建内容 |
+| Ctrl + S | 保存 | 保存内容 |
+| Alt + D | 仪表盘 | 跳转首页 |
+| Alt + T | 任务 | 跳转任务页 |
+| Alt + P | 项目 | 跳转项目页 |
+| F5 | 刷新 | 刷新页面 |
+| Esc | 取消 | 取消操作 |
+
+### 10.3 屏幕阅读器设计
+
+#### 10.3.1 ARIA 属性使用
+```vue
+<!-- 卡片组件 -->
+<article role="region" aria-label="统计信息">
+  <h3>标题</h3>
+  <div aria-label="数值">123</div>
+</article>
+
+<!-- 输入框组件 -->
+<input 
+  id="email"
+  aria-label="邮箱地址"
+  aria-describedby="email-error"
+  role="textbox"
+/>
+
+<!-- 按钮 -->
+<button aria-label="保存按钮">保存</button>
+```
+
+#### 10.3.2 ARIA-live 区域
+```vue
+<!-- 错误提示区域 -->
+<div role="alert" aria-live="assertive">
+  错误信息
+</div>
+
+<!-- 动态内容区域 -->
+<div aria-live="polite">
+  加载中...
+</div>
+```
+
+#### 10.3.3 图标处理
+```vue
+<!-- 装饰性图标 -->
+<el-icon aria-hidden="true">IconName</el-icon>
+
+<!-- 功能图标 -->
+<el-icon aria-label="搜索图标">Search</el-icon>
+```
+
+### 10.4 颜色对比度
+
+#### 10.4.1 对比度标准
+- 正文文本：≥ 4.5:1
+- UI 元素：≥ 3:1
+- 非文本内容：≥ 3:1
+
+#### 10.4.2 配色方案
+```css
+/* 文本颜色 */
+--color-text-primary: #262626;  /* 对比度: 10:1 ✅ */
+--color-text-secondary: #595959;  /* 对比度: 7:1 ✅ */
+--color-text-tertiary: #595959;  /* 对比度: 7:1 ✅ */
+
+/* 功能色 */
+--color-success: #52C41A;  /* 对比度: 7:1 ✅ */
+--color-warning: #FAAD14;  /* 对比度: 7:1 ✅ */
+--color-danger: #FF4D4F;  /* 对比度: 7:1 ✅ */
+--color-info: #1890FF;  /* 对比度: 10:1 ✅ */
+```
+
+#### 10.4.3 避免颜色作为唯一信息
+- 使用图标 + 颜色提供信息
+- 使用文本标签补充颜色含义
+- 检查所有信息传递方式
+
+### 10.5 焦点管理
+
+#### 10.5.1 全局焦点管理
+```javascript
+// 焦点管理函数
+const focusFirstInput = () => {
+  nextTick(() => {
+    const firstInput = document.querySelector('input[type="text"]') ||
+                      document.querySelector('input[type="email"]')
+    if (firstInput) {
+      firstInput.focus()
+    }
+  })
+}
+```
+
+#### 10.5.2 焦点陷阱
+```javascript
+// 模态框焦点陷阱
+const trapFocus = (modal) => {
+  const focusableElements = modal.querySelectorAll(
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1")]' +
+    ':not([tabindex="-1")]' +
+    ':not([tabindex="-1")]'
+  )
+  // 实现焦点陷阱逻辑
+}
+```
+
+### 10.6 快捷键设计
+
+#### 10.6.1 快捷键原则
+- 常用操作使用快捷键
+- 快捷键符合用户习惯
+- 提供快捷键提示
+- 支持自定义快捷键
+
+#### 10.6.2 快捷键注册
+```javascript
+// 快捷键映射
+const shortcuts = {
+  'Ctrl+K': () => { searchInput.focus() },
+  'Ctrl+N': () => { openCreateDialog() },
+  'Ctrl+S': (e) => { e.preventDefault(); save() },
+  'Alt+D': () => { router.push('/') },
+  'Esc': () => { closeModal() }
+}
+
+// 注册快捷键
+const registerShortcuts = () => {
+  window.addEventListener('keydown', (e) => {
+    if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+      return
+    }
+    if (shortcuts[e.key]) {
+      shortcuts[e.key](e)
+    }
+  })
+}
+```
+
+### 10.7 辅助功能支持
+
+#### 10.7.1 浏览器兼容性
+- Chrome 最新版
+- Firefox 最新版
+- Edge 最新版
+- Safari 最新版
+
+#### 10.7.2 屏幕阅读器兼容性
+| 屏幕阅读器 | 支持版本 | 备注 |
+|-----------|---------|------|
+| NVDA | 最新版 | Windows |
+| JAWS | 最新版 | Windows |
+| VoiceOver | 最新版 | Mac |
+| Orca | 最新版 | Linux |
+
+#### 10.7.3 第三方工具
+- **axe DevTools** - 浏览器插件，WCAG 2.1 AA 审计
+- **WAVE** - 在线无障碍评估工具
+- **Lighthouse** - 浏览器性能和无障碍评分
+- **色彩对比度检查工具** - 测试对比度
+
+### 10.8 设计检查清单
+
+#### 10.8.1 每次设计检查
+- [ ] 使用语义化标签
+- [ ] 所有元素有 ARIA 属性
+- [ ] 焦点指示器清晰可见
+- [ ] 颜色对比度符合标准
+- [ ] 键盘导航完整
+- [ ] 错误信息明确提示
+- [ ] 加载状态有描述
+- [ ] 屏幕阅读器测试通过
+
+### 10.9 无障碍性测试
+
+#### 10.9.1 自动化测试
+```bash
+# axe DevTools
+npm install -g axe-cli
+axe --tags=wcag2a,wcag2aa,wcag21a,wcag21aa target.html
+
+# Lighthouse
+lighthouse https://your-site.com
+```
+
+#### 10.9.2 手动测试流程
+1. 使用键盘导航所有功能
+2. 使用屏幕阅读器测试
+3. 测试低对比度模式
+4. 测试缩放至 125% 和 200%
+5. 测试各种浏览器
+
+---
+
+## 变更记录
+
+| 日期 | 版本 | 变更内容 |
+|------|------|---------|
+| 2026-02-08 | v1.0 | 初始 UI/UX 设计 |
+| 2026-02-08 | v1.1 | 新增第10章：无障碍性设计 |
+

@@ -1,0 +1,24 @@
+# 企业项目管理系统 - 后端依赖（最小集）
+
+# Web框架
+fastapi>=0.100.0
+uvicorn>=0.23.0
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+
+# 数据库
+sqlalchemy>=2.0.0
+
+# 认证
+python-jose>=3.3.0
+passlib>=1.7.4
+bcrypt>=4.0.0
+
+# 工具库
+python-dotenv>=1.0.0
+python-multipart>=0.0.6
+
+# 测试
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+httpx>=0.25.0

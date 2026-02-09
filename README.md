@@ -2,7 +2,7 @@
 
 **版本**: v1.0  
 **创建日期**: 2026-02-08  
-**最后更新**: 2026-02-08
+**最后更新**: 2026-02-09
 
 ## 项目简介
 
@@ -10,17 +10,20 @@
 
 ## 技术栈
 
-### 前端
+### 前端 ✅ 已完成
 - **Vue 3** - 渐进式 JavaScript 框架
 - **Element Plus** - Vue 3 UI 组件库
 - **Vite** - 构建工具
 - **Vue Router** - 路由管理
+- **Pinia** - 状态管理
 - **SortableJS** - 拖拽功能
+- **Vitest** - 单元测试框架 ⭐ **新增**
 
-### 后端（待开发）
+### 后端 ✅ 已初始化
 - **FastAPI** - Python Web 框架
 - **SQLite** - 轻量级数据库
 - **JWT** - 身份认证
+- **pytest** - Python 测试框架 ⭐ **已配置**
 
 ## 项目结构
 
@@ -35,7 +38,7 @@ enterprise-project-management/
 │
 ├── 📁 src/                   # 源代码
 │   ├── 📁 frontend/          # Vue 3 前端
-│   └── 📁 backend/           # FastAPI 后端（待开发）
+│   └── 📁 backend/           # FastAPI 后端 ✅ 已初始化
 │
 └── 📁 deployment/             # 部署配置（待开发）
 ```
@@ -49,6 +52,7 @@ enterprise-project-management/
 | 侧边栏 | 导航菜单、可拖拽宽度 | `src/frontend/src/views/layout/` |
 | 文档中心 | 6 类文档、markdown 渲染 | `src/frontend/src/views/docs/` |
 | 任务看板 | 3 列看板、拖拽、筛选、搜索 | `src/frontend/src/views/tasks/` |
+| **测试框架** | Vitest + 示例测试 | `src/frontend/src/**/*.test.js` ⭐ |
 
 ### ⏳ 待开发
 | 模块 | 说明 |
@@ -56,7 +60,8 @@ enterprise-project-management/
 | 甘特图 | 时间轴视图、任务依赖 |
 | 资源分配 | 人员调度、工时管理 |
 | 审批流程 | 审批列表、流程管理 |
-| 后端 API | FastAPI + SQLite |
+| 后端 API | FastAPI + SQLite（基础结构已创建） |
+| 后端测试 | pytest（配置已完成，测试用例待编写） |
 
 ## 快速开始
 
@@ -65,6 +70,22 @@ enterprise-project-management/
 cd src/frontend
 npm install
 npm run dev
+```
+
+### 后端
+```bash
+cd backend
+pip install -r requirements.txt
+python -m app.core.init_db
+bash start.sh
+```
+
+### 运行测试
+```bash
+cd src/frontend
+npm test              # 监控模式
+npm run test:run      # 运行一次
+npm run test:coverage # 生成覆盖率报告
 ```
 
 ### 访问地址
@@ -80,6 +101,8 @@ npm run dev
 | 架构 | [docs/design/architecture/2026-02-08-project-management-system-design.md](./docs/design/architecture/2026-02-08-project-management-system-design.md) | 技术架构 |
 | API | [docs/api/2026-02-08-api.md](./docs/api/2026-02-08-api.md) | 接口文档 |
 | 手册 | [docs/manual/2026-02-08-user-manual.md](./docs/manual/2026-02-08-user-manual.md) | 用户手册 |
+| ⭐ 测试 | [TESTING_QUICKSTART.md](./TESTING_QUICKSTART.md) | 测试框架快速入门 |
+| ⭐ 测试 | [docs/testing/2026-02-09-testing-guide.md](./docs/testing/2026-02-09-testing-guide.md) | 测试配置指南 |
 
 ## 任务看板设计
 

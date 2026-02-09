@@ -146,7 +146,19 @@ router.beforeEach((to, from, next) => {
     document.title = '企业项目管理系统'
   }
   
-  next()
+  // 认证检查
+  const token = localStorage.getItem('auth_token')
+  const requiresAuth = to.meta.requiresAuth || false
+  
+  if (requiresAuth && !token) {
+    // 需要认证但未登录
+    next('/auth/login')
+  } else if (to.path === '/auth/login' && token) {
+    // 已登录但访问登录页
+    next('/')
+  } else {
+    next()
+  }
 })
 
 export default router

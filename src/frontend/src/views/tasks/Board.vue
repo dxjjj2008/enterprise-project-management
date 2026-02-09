@@ -1,7 +1,11 @@
 <template>
   <div class="board-page">
+      role="main"
+      aria-label="任务看板页面"
     <!-- 页面头部 -->
     <div class="board-header">
+      role="banner"
+      aria-label="任务看板标题"
       <div class="header-left">
         <span class="board-title">任务看板</span>
       </div>
@@ -16,13 +20,15 @@
           class="search-input"
         />
         <!-- 优先级筛选 -->
-        <el-select v-model="filterPriority" placeholder="优先级" clearable size="default" class="filter-select">
+        <el-select v-model="filterPriority" placeholder="按优先级筛选"
+            aria-label="优先级筛选" clearable size="default" class="filter-select">
           <el-option label="紧急" value="high" />
           <el-option label="中" value="medium" />
           <el-option label="低" value="low" />
         </el-select>
         <!-- 项目选择器 -->
-        <el-select v-model="currentProject" placeholder="选择项目" size="default" class="project-select">
+        <el-select v-model="currentProject" placeholder="选择项目"
+            aria-label="项目筛选" size="default" class="project-select">
           <el-option
             v-for="p in projects"
             :key="p.id"
@@ -31,7 +37,9 @@
           />
         </el-select>
         <!-- 新建任务按钮 -->
-        <el-button type="primary" :icon="Plus" @click="openCreateDialog">新建任务</el-button>
+        <el-button type="primary" :icon="Plus" @click="openCreateDialog"
+            aria-label="新建任务"
+            @keydown.enter="openCreateDialog">新建任务</el-button>
       </div>
     </div>
 
@@ -39,11 +47,19 @@
     <div class="board-body" v-loading="loading">
       <!-- 无任务提示 -->
       <el-empty v-if="!hasVisibleTasks" description="暂无任务" :image-size="120">
-        <el-button type="primary" @click="openCreateDialog">新建任务</el-button>
+            role="alert"
+            aria-live="assertive"
+            aria-label="当前没有任务"
+        <el-button type="primary" @click="openCreateDialog"
+            aria-label="新建任务"
+            @keydown.enter="openCreateDialog">新建任务</el-button>
       </el-empty>
       
       <!-- 看板列 -->
       <div class="board-columns" v-else>
+            role="listbox"
+            aria-label="任务列表"
+            aria-live="polite"
         <div
           v-for="column in columns"
           :key="column.id"
@@ -69,6 +85,13 @@
           >
             <template #item="{ element: task }">
               <div class="task-card" @click="openTaskDetail(task)">
+              role="option"
+              tabindex="0"
+              :aria-selected="selectedTaskId === task.id"
+              @keydown.enter="openTaskDetail(task)"
+              @keydown.space="openTaskDetail(task)"
+              @keydown.ArrowUp="handleArrowUp(task)"
+              @keydown.ArrowDown="handleArrowDown(task)"
                 <!-- 优先级标签 -->
                 <div class="task-header">
                   <el-tag :type="getPriorityType(task.priority)" size="small" effect="dark">
@@ -78,8 +101,8 @@
                     <el-icon class="task-action-btn"><MoreFilled /></el-icon>
                     <template #dropdown>
                       <el-dropdown-menu>
-                        <el-dropdown-item command="edit">编辑</el-dropdown-item>
-                        <el-dropdown-item command="delete" divided>删除</el-dropdown-item>
+                        <el-dropdown-item command="edit" aria-label="编辑" aria-label="编辑任务">编辑</el-dropdown-item>
+                        <el-dropdown-item command="delete" aria-label="删除" aria-label="删除任务" divided>删除</el-dropdown-item>
                       </el-dropdown-menu>
                     </template>
                   </el-dropdown>
@@ -183,6 +206,9 @@
                 </el-checkbox>
               </div>
               <el-empty v-if="!currentTask.subtasks?.length" description="暂无子任务" :image-size="60" />
+            role="alert"
+            aria-live="assertive"
+            aria-label="当前没有任务"
             </div>
           </div>
 
@@ -203,6 +229,9 @@
                 </div>
               </div>
               <el-empty v-if="!currentTask.comments?.length" description="暂无评论" :image-size="60" />
+            role="alert"
+            aria-live="assertive"
+            aria-label="当前没有任务"
             </div>
           </div>
         </div>
@@ -443,6 +472,42 @@ const handleDragChange = (evt, status) => {
 }
 
 // 处理任务操作
+
+const selectedTaskId = ref(null)
+
+const handleArrowUp = (task) => {
+  const currentIndex = tasks.value.findIndex(t => t.id === task.id)
+  if (currentIndex > 0) {
+    selectedTaskId.value = tasks.value[currentIndex - 1].id
+  }
+}
+
+const handleArrowDown = (task) => {
+  const currentIndex = tasks.value.findIndex(t => t.id === task.id)
+  if (currentIndex < tasks.value.length - 1) {
+    selectedTaskId.value = tasks.value[currentIndex + 1].id
+  }
+}
+
+const handleKeydown = (event, task) => {
+  switch (event.key) {
+    case 'Enter':
+      event.preventDefault()
+      openTaskDetail(task)
+      break
+    case ' ':
+      event.preventDefault()
+      openTaskDetail(task)
+      break
+    case 'ArrowUp':
+      handleArrowUp(task)
+      break
+    case 'ArrowDown':
+      handleArrowDown(task)
+      break
+  }
+}
+
 const handleTaskAction = async (command, task) => {
   if (command === 'edit') {
     openEditDialog(task)
@@ -881,4 +946,52 @@ onMounted(() => {
   color: #595959;
   line-height: 1.5;
 }
+
+/* 焦点状态 - 任务看板 */
+.task-card:focus-visible {
+  outline: 2px solid #1890ff;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.15);
+  transform: translateY(-2px);
+  z-index: 1;
+  position: relative;
+}
+
+.column-header:focus-visible {
+  outline: 2px solid #1890ff;
+  outline-offset: 2px;
+}
+
+.task-action-btn:focus-visible {
+  outline: 2px solid #1890ff;
+  outline-offset: 2px;
+  background-color: #e6f7ff;
+  color: #1890ff;
+}
+
+/* 列焦点 */
+.board-column:focus-visible {
+  outline: 2px solid #1890ff;
+  outline-offset: 2px;
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.1);
+}
+
+/* 焦点辅助类 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 加载状态 */
+.task-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
 </style>

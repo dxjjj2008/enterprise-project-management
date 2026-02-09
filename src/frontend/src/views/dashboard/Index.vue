@@ -160,7 +160,7 @@
         <div class="content-card">
           <div class="card-header">
             <h3 class="card-title">最近项目</h3>
-            <el-link type="primary" :underline="false" size="small">全部</el-link>
+            <el-link type="primary" underline="never" size="small">全部</el-link>
           </div>
           <div class="project-list">
             <div class="project-item" v-for="project in projects" :key="project.id">
@@ -177,7 +177,7 @@
         <div class="content-card">
           <div class="card-header">
             <h3 class="card-title">我的待办</h3>
-            <el-link type="primary" :underline="false" size="small">全部</el-link>
+            <el-link type="primary" underline="never" size="small">全部</el-link>
           </div>
           <div class="todo-list">
             <div class="todo-item" v-for="item in todos" :key="item.id">
@@ -195,8 +195,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { Folder, CircleCheck, WarningFilled, Lightning, Box, Clock, Stamp, Tickets } from '@element-plus/icons-vue'
+import { getProjects } from '@/api/projects'
 
 const todos = ref([
   { id: 1, title: '完成项目管理系统需求文档', done: false, priority: 'high', priorityLabel: '高' },
@@ -205,11 +206,29 @@ const todos = ref([
   { id: 4, title: '更新甘特图时间线', done: true, priority: 'medium', priorityLabel: '中' }
 ])
 
-const projects = ref([
-  { id: 1, name: '企业项目管理系统 V1.0', progress: 65 },
-  { id: 2, name: '技术架构升级', progress: 30 },
-  { id: 3, name: '客户门户优化', progress: 85 }
-])
+const projects = ref([])
+const loading = ref(false)
+
+// 加载项目数据
+const loadProjects = async () => {
+  loading.value = true
+  try {
+    const response = await getProjects(1, 3)
+    projects.value = (response.items || []).map(project => ({
+      id: project.id,
+      name: project.name,
+      progress: project.progress || 0
+    }))
+  } catch (error) {
+    console.error('加载项目失败:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  loadProjects()
+})
 
 const getPriorityType = (priority) => {
   const map = { high: 'danger', medium: 'warning', low: 'info' }
