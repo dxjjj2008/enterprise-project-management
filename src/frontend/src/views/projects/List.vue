@@ -87,7 +87,7 @@
     
     <!-- 表格视图 -->
     <div v-else class="table-container">
-      <el-table :data="filteredProjects" style="width: 100%">
+      <el-table :data="filteredProjects" style="width: 100%" v-loading="loading" stripe highlight-current-row>
         <el-table-column prop="name" label="项目名称" min-width="200" />
         <el-table-column prop="status" label="状态" width="100">
           <template #default="{ row }">
@@ -101,17 +101,19 @@
             <el-progress :percentage="row.progress" :stroke-width="6" />
           </template>
         </el-table-column>
-        <el-table-column prop="members" label="成员" width="150">
-          <template #default="{ row }">
-            <div class="table-members">
-              <el-avatar
-                v-for="member in row.members.slice(0, 3)"
-                :key="member"
-                :size="24"
-              />
-            </div>
-          </template>
-        </el-table-column>
+            <el-table-column prop="members" label="成员" width="150">
+              <template #default="{ row }">
+                <div class="table-members">
+                  <el-avatar
+                    v-for="(member, idx) in row.members.slice(0, 3)"
+                    :key="idx"
+                    :size="24"
+                    :src="member.avatar"
+                    loading="lazy"
+                  />
+                </div>
+              </template>
+            </el-table-column>
         <el-table-column prop="endDate" label="截止日期" width="120" />
          <el-table-column label="操作" width="180" fixed="right">
            <template #default="{ row }">
@@ -288,106 +290,61 @@ onMounted(() => {
   display: flex;
   gap: 16px;
   margin-bottom: 24px;
-}
-
-.project-card {
-  background: #FFFFFF;
-  border-radius: 8px;
-  border: 1px solid #F0F0F0;
-  padding: 20px;
-  margin-bottom: 24px;
-  transition: all 0.2s;
-  cursor: pointer;
-}
-
-.project-card:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-}
-
-.project-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.more-btn {
-  cursor: pointer;
-  color: #8C8C8C;
-}
-
-.project-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #262626;
-  margin: 0 0 8px 0;
-}
-
-.project-desc {
-  font-size: 13px;
-  color: #8C8C8C;
-  margin: 0 0 16px 0;
-  line-height: 1.5;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.project-progress {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.project-progress .progress-bar {
-  flex: 1;
-}
-
-.project-progress span {
-  font-size: 12px;
-  color: #595959;
-  min-width: 40px;
-}
-
-.project-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.project-members {
-  display: flex;
-  align-items: center;
-}
-
-.project-members .el-avatar {
-  border: 2px solid #FFFFFF;
-  margin-left: -8px;
-}
-
-.project-members .el-avatar:first-child {
-  margin-left: 0;
-}
-
-.more-members {
-  margin-left: 8px;
-  font-size: 12px;
-  color: #8C8C8C;
-}
-
-.project-date {
-  font-size: 12px;
-  color: #8C8C8C;
-}
-
-.table-members {
-  display: flex;
+  flex-wrap: wrap;
 }
 
 .dialog-form {
   padding: 20px 0;
+}
+
+/* ========== 响应式布局 ========== */
+
+/* 平板端 (768px - 1024px) */
+@media screen and (min-width: 768px) and (max-width: 1024px) {
+  .filter-section {
+    gap: 12px;
+  }
+  
+  .project-card {
+    padding: 16px;
+  }
+}
+
+/* 移动端 (< 768px) */
+@media screen and (max-width: 767px) {
+  .filter-section {
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  
+  .filter-section .el-select {
+    width: 100px;
+  }
+  
+  .el-table {
+    font-size: 13px;
+  }
+  
+  .pagination-container {
+    justify-content: center;
+    display: flex;
+  }
+}
+
+/* 小屏移动端 (< 480px) */
+@media screen and (max-width: 479px) {
+  .page-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  
+  .filter-section {
+    flex-direction: column;
+  }
+  
+  .filter-section .el-select {
+    width: 100%;
+  }
 }
 </style>

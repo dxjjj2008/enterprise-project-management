@@ -87,7 +87,7 @@
             >
               <div class="workload-card" @click="viewUserDetail(member.user.id)">
                 <div class="card-header">
-                  <el-avatar :size="48" :src="member.user.avatar">
+                  <el-avatar :size="48" :src="member.user.avatar" :alt="member.user.username" loading="lazy">
                     {{ member.user.username?.charAt(0)?.toUpperCase() }}
                   </el-avatar>
                   <div class="user-info">
@@ -154,7 +154,7 @@
             <el-table-column prop="username" label="用户名" width="150">
               <template #default="{ row }">
                 <div class="user-cell">
-                  <el-avatar :size="32" :src="row.avatar">
+                  <el-avatar :size="32" :src="row.avatar" :alt="row.username" loading="lazy">
                     {{ row.username?.charAt(0)?.toUpperCase() }}
                   </el-avatar>
                   <span>{{ row.username }}</span>
@@ -199,7 +199,7 @@
                     class="utilization-item"
                   >
                     <div class="item-rank">{{ index + 1 }}</div>
-                    <el-avatar :size="40" :src="item.avatar">
+                    <el-avatar :size="40" :src="item.avatar" :alt="item.username" loading="lazy">
                       {{ item.username?.charAt(0)?.toUpperCase() }}
                     </el-avatar>
                     <div class="item-info">
@@ -259,7 +259,7 @@
     >
       <div v-if="selectedUser" class="user-detail">
         <div class="detail-header">
-          <el-avatar :size="80" :src="selectedUser.user?.avatar">
+          <el-avatar :size="80" :src="selectedUser.user?.avatar" :alt="selectedUser.user?.username" loading="lazy">
             {{ selectedUser.user?.username?.charAt(0)?.toUpperCase() }}
           </el-avatar>
           <div class="detail-info">
