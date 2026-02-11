@@ -1,0 +1,86 @@
+{
+  "timestamp": "2026-02-10T04:56:46.684Z",
+  "summary": {
+    "total": 15,
+    "passed": 10,
+    "failed": 5,
+    "passRate": "66.7%"
+  },
+  "results": [
+    {
+      "test": "API健康检查",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "仪表盘页面加载",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "项目页面加载",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "任务页面加载",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "文档页面加载",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "注册页面加载",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "登录页面加载",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "用户注册流程",
+      "status": "FAIL",
+      "message": "page.fill: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[placeholder*=\"确认密码\"]')\u001b[22m\n"
+    },
+    {
+      "test": "用户登录流程",
+      "status": "FAIL",
+      "message": "page.fill: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[placeholder*=\"用户名\"]')\u001b[22m\n"
+    },
+    {
+      "test": "用户登出流程",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "创建项目",
+      "status": "FAIL",
+      "message": "page.fill: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[placeholder*=\"用户名\"]')\u001b[22m\n"
+    },
+    {
+      "test": "项目列表查看",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "任务页面加载",
+      "status": "FAIL",
+      "message": "任务看板未找到"
+    },
+    {
+      "test": "创建任务",
+      "status": "FAIL",
+      "message": "page.fill: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[placeholder*=\"任务标题\"]')\u001b[22m\n"
+    },
+    {
+      "test": "页面导航测试",
+      "status": "PASS",
+      "message": "测试通过"
+    }
+  ]
+}
