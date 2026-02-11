@@ -13,7 +13,7 @@ from contextlib import asynccontextmanager
 
 from app.core.config import settings
 from app.models.database import init_db, close_db
-from app.api.v1 import auth, projects, tasks, resources
+from app.api.v1 import auth, projects, tasks, resources, planning, reports, approvals, gantt, risks, issues
 from app.core.security import create_access_token
 
 
@@ -77,6 +77,42 @@ app.include_router(
     resources.router,
     prefix="/api/v1/resources",
     tags=["资源管理"]
+)
+
+app.include_router(
+    planning.router,
+    prefix="/api/v1",
+    tags=["计划管理"]
+)
+
+app.include_router(
+    reports.router,
+    prefix="/api/v1",
+    tags=["报表统计"]
+)
+
+app.include_router(
+    approvals.router,
+    prefix="/api/v1",
+    tags=["审批管理"]
+)
+
+app.include_router(
+    gantt.router,
+    prefix="/api/v1",
+    tags=["甘特图"]
+)
+
+app.include_router(
+    risks.router,
+    prefix="/api/v1",
+    tags=["风险管理"]
+)
+
+app.include_router(
+    issues.router,
+    prefix="/api/v1",
+    tags=["问题跟踪"]
 )
 
 

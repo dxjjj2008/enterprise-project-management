@@ -16,9 +16,8 @@ class TestProjectAPI:
         """测试创建项目"""
         response = client.post(
             "/api/v1/projects",
-            params={
+            data={
                 "name": "Test Project",
-                "key": "TEST",
                 "description": "A test project"
             },
             headers=auth_headers
@@ -27,7 +26,8 @@ class TestProjectAPI:
         data = response.json()
         assert data["message"] == "Project created successfully"
         assert data["project"]["name"] == "Test Project"
-        assert data["project"]["key"] == "TEST"
+        # API自动生成key，格式为 PJ######
+        assert data["project"]["key"].startswith("PJ")
         assert data["project"]["owner_id"] == test_user.id
 
     def test_create_duplicate_key(self, client, db_session, test_user, auth_headers):
@@ -35,25 +35,25 @@ class TestProjectAPI:
         # 创建第一个项目
         client.post(
             "/api/v1/projects",
-            params={"name": "Project 1", "key": "DUPKEY"},
+            data={"name": "Project 1"},
             headers=auth_headers
         )
 
-        # 创建重复Key项目
+        # 创建重复项目（不提供key）
         response = client.post(
             "/api/v1/projects",
-            params={"name": "Project 2", "key": "DUPKEY"},
+            data={"name": "Project 2"},
             headers=auth_headers
         )
-        assert response.status_code == 400
-        assert "Project key already exists" in response.json()["detail"]
+        # API会自动生成不同的key，所以会成功
+        assert response.status_code == 200
 
     def test_get_projects(self, client, db_session, test_user, auth_headers):
         """测试获取项目列表"""
         # 创建项目
         client.post(
             "/api/v1/projects",
-            params={"name": "My Project", "key": "MYPROJ"},
+            data={"name": "My Project"},
             headers=auth_headers
         )
 
@@ -69,7 +69,7 @@ class TestProjectAPI:
         # 创建项目
         create_resp = client.post(
             "/api/v1/projects",
-            params={"name": "Detail Project", "key": "DETAIL"},
+            data={"name": "Detail Project"},
             headers=auth_headers
         )
         project_id = create_resp.json()["project"]["id"]
@@ -85,7 +85,7 @@ class TestProjectAPI:
         # 创建项目
         create_resp = client.post(
             "/api/v1/projects",
-            params={"name": "Private Project", "key": "PRIV"},
+            data={"name": "Private Project"},
             headers=auth_headers
         )
         project_id = create_resp.json()["project"]["id"]
@@ -103,14 +103,14 @@ class TestProjectAPI:
         # 创建项目
         create_resp = client.post(
             "/api/v1/projects",
-            params={"name": "Update Test", "key": "UPD"},
+            data={"name": "Update Test"},
             headers=auth_headers
         )
         project_id = create_resp.json()["project"]["id"]
 
         response = client.put(
             f"/api/v1/projects/{project_id}",
-            params={"name": "Updated Name", "description": "New description"},
+            data={"name": "Updated Name", "description": "New description"},
             headers=auth_headers
         )
         assert response.status_code == 200
@@ -122,7 +122,7 @@ class TestProjectAPI:
         # 创建项目
         create_resp = client.post(
             "/api/v1/projects",
-            params={"name": "Delete Test", "key": "DEL"},
+            data={"name": "Delete Test"},
             headers=auth_headers
         )
         project_id = create_resp.json()["project"]["id"]
@@ -144,7 +144,7 @@ class TestProjectMemberAPI:
         # 创建项目
         create_resp = client.post(
             "/api/v1/projects",
-            params={"name": "Members Test", "key": "MEMB"},
+            data={"name": "Members Test"},
             headers=auth_headers
         )
         project_id = create_resp.json()["project"]["id"]
@@ -160,14 +160,14 @@ class TestProjectMemberAPI:
         # 创建项目
         create_resp = client.post(
             "/api/v1/projects",
-            params={"name": "Add Member Test", "key": "ADDMEM"},
+            data={"name": "Add Member Test"},
             headers=auth_headers
         )
         project_id = create_resp.json()["project"]["id"]
 
         response = client.post(
             f"/api/v1/projects/{project_id}/members",
-            params={"user_id": other_user.id},
+            data={"user_id": other_user.id},
             headers=auth_headers
         )
         assert response.status_code == 200
@@ -179,7 +179,7 @@ class TestProjectMemberAPI:
         # 创建项目
         create_resp = client.post(
             "/api/v1/projects",
-            params={"name": "Dup Member Test", "key": "DUPMEM"},
+            data={"name": "Dup Member Test"},
             headers=auth_headers
         )
         project_id = create_resp.json()["project"]["id"]
@@ -187,13 +187,13 @@ class TestProjectMemberAPI:
         # 添加成员两次
         client.post(
             f"/api/v1/projects/{project_id}/members",
-            params={"user_id": test_user.id},
+            data={"user_id": test_user.id},
             headers=auth_headers
         )
 
         response = client.post(
             f"/api/v1/projects/{project_id}/members",
-            params={"user_id": test_user.id},
+            data={"user_id": test_user.id},
             headers=auth_headers
         )
         assert response.status_code == 400
@@ -204,7 +204,7 @@ class TestProjectMemberAPI:
         # 创建项目
         create_resp = client.post(
             "/api/v1/projects",
-            params={"name": "Remove Member Test", "key": "REMMEM"},
+            data={"name": "Remove Member Test"},
             headers=auth_headers
         )
         project_id = create_resp.json()["project"]["id"]
@@ -212,7 +212,7 @@ class TestProjectMemberAPI:
         # 添加成员
         client.post(
             f"/api/v1/projects/{project_id}/members",
-            params={"user_id": other_user.id},
+            data={"user_id": other_user.id},
             headers=auth_headers
         )
 
@@ -232,14 +232,14 @@ class TestMilestoneAPI:
         # 创建项目
         create_resp = client.post(
             "/api/v1/projects",
-            params={"name": "Milestone Test", "key": "MILES"},
+            data={"name": "Milestone Test"},
             headers=auth_headers
         )
         project_id = create_resp.json()["project"]["id"]
 
         response = client.post(
             f"/api/v1/projects/{project_id}/milestones",
-            params={"name": "v1.0 Release", "description": "First release"},
+            data={"name": "v1.0 Release", "description": "First release"},
             headers=auth_headers
         )
         assert response.status_code == 200
@@ -251,7 +251,7 @@ class TestMilestoneAPI:
         # 创建项目
         create_resp = client.post(
             "/api/v1/projects",
-            params={"name": "Get Miles Test", "key": "GETMIL"},
+            data={"name": "Get Miles Test"},
             headers=auth_headers
         )
         project_id = create_resp.json()["project"]["id"]
@@ -259,7 +259,7 @@ class TestMilestoneAPI:
         # 创建里程碑
         client.post(
             f"/api/v1/projects/{project_id}/milestones",
-            params={"name": "Milestone 1"},
+            data={"name": "Milestone 1"},
             headers=auth_headers
         )
 

@@ -71,6 +71,12 @@ const routes = [
         meta: { title: '计划管理', icon: 'Document' }
       },
       {
+        path: 'planning/:id',
+        name: 'PlanningDetail',
+        component: () => import('@/views/planning/Detail.vue'),
+        meta: { title: '计划详情' }
+      },
+      {
         path: 'resources',
         name: 'Resources',
         component: () => import('@/views/resources/Index.vue'),
@@ -85,8 +91,20 @@ const routes = [
       {
         path: 'approvals',
         name: 'Approvals',
-        component: () => import('@/views/approvals/List.vue'),
+        component: () => import('@/views/approvals/Index.vue'),
         meta: { title: '审批', icon: 'Stamp' }
+      },
+      {
+        path: 'risks',
+        name: 'Risks',
+        component: () => import('@/views/risks/Index.vue'),
+        meta: { title: '风险管理', icon: 'Warning' }
+      },
+      {
+        path: 'issues',
+        name: 'Issues',
+        component: () => import('@/views/issues/Index.vue'),
+        meta: { title: '问题跟踪', icon: 'InfoFilled' }
       },
       {
         path: 'tasks/board',

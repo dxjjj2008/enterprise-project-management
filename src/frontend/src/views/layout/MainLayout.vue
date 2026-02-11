@@ -144,11 +144,6 @@
           <!-- 移动端快捷搜索按钮 -->
           <el-button v-if="isMobile" :icon="Search" circle @click="showMobileSearch = true" />
           
-          <!-- 通知按钮 -->
-          <el-badge :value="3" :max="99" v-if="!isMobile">
-            <el-button :icon="Bell" circle />
-          </el-badge>
-          
           <el-dropdown trigger="click">
             <div class="user-dropdown">
               <el-avatar :size="isMobile ? 28 : 32" src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" />
@@ -163,6 +158,11 @@
               </el-dropdown-menu>
             </template>
           </el-dropdown>
+          
+          <!-- 帮助按钮 -->
+          <el-tooltip content="帮助文档" placement="bottom">
+            <el-button :icon="QuestionFilled" circle @click="openHelp" />
+          </el-tooltip>
         </div>
       </header>
       
@@ -348,6 +348,11 @@ const goToTask = (id) => {
   // 跳转到任务详情
   showSearchResults.value = false
   searchKeyword.value = ''
+}
+
+// 打开帮助文档
+const openHelp = () => {
+  window.open('/docs', '_blank')
 }
 
 // 点击外部关闭搜索结果

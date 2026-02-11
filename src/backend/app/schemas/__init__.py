@@ -245,13 +245,6 @@ class TaskResponse(BaseModel):
         from_attributes = True
 
 
-class TaskWithDetails(TaskResponse):
-    """带详细信息的任务响应"""
-    subtasks: List[TaskResponse] = []
-    comments: List[CommentResponse] = []
-    labels: List[LabelResponse] = []
-
-
 # ============ 评论 schemas ============
 
 class CommentCreate(BaseModel):
@@ -274,7 +267,7 @@ class CommentResponse(BaseModel):
 
 class CommentWithAuthor(CommentResponse):
     """带作者信息的评论响应"""
-    author: UserResponse
+    author: "UserResponse"
 
 
 # ============ 标签 schemas ============

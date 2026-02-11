@@ -33,7 +33,7 @@ class TestAuthAPI:
         """测试用户注册"""
         response = client.post(
             "/api/v1/auth/register",
-            params={
+            data={
                 "username": "newuser",
                 "email": "newuser@example.com",
                 "password": "newpassword123"
@@ -49,7 +49,7 @@ class TestAuthAPI:
         """测试重复用户注册"""
         response = client.post(
             "/api/v1/auth/register",
-            params={
+            data={
                 "username": test_user.username,
                 "email": "another@example.com",
                 "password": "password123"

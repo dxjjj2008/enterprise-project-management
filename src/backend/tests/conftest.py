@@ -1,6 +1,6 @@
 # 企业项目管理系统 - API测试配置
 """
-测试配置和 fixtures
+测试配置和fixtures
 """
 
 import pytest
@@ -8,6 +8,12 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
+from datetime import datetime, date
+import sys
+import os
+
+# 添加项目根目录到路径
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from main import app
 from app.models.database import Base, get_db
@@ -128,3 +134,85 @@ def other_user(db_session):
     db_session.commit()
     db_session.refresh(user)
     return user
+
+
+@pytest.fixture(scope="function")
+def test_user_token(auth_token):
+    """生成认证令牌（兼容旧测试写法）"""
+    return auth_token
+
+
+@pytest.fixture(scope="function")
+def test_plan(db_session, test_project, test_user):
+    """创建测试计划"""
+    from app.models import Plan, PlanStatus
+    plan = Plan(
+        name="Test Plan",
+        project_id=test_project.id,
+        description="A test plan",
+        status=PlanStatus.DRAFT,
+        start_date=date(2024, 1, 1),
+        end_date=date(2024, 3, 31),
+        owner_id=test_user.id
+    )
+    db_session.add(plan)
+    db_session.commit()
+    db_session.refresh(plan)
+    return plan
+
+
+@pytest.fixture(scope="function")
+def test_plan_id(test_plan):
+    """返回测试计划ID"""
+    return test_plan.id
+
+
+@pytest.fixture(scope="function")
+def test_wbs_task(db_session, test_plan):
+    """创建测试WBS任务"""
+    from app.models import WBSTask
+    task = WBSTask(
+        name="Test WBS Task",
+        plan_id=test_plan.id,
+        level=1,
+        sort_order=0,
+        start_date=date(2024, 1, 1),
+        end_date=date(2024, 1, 15),
+        duration=10,
+        progress=0,
+        status="pending"
+    )
+    db_session.add(task)
+    db_session.commit()
+    db_session.refresh(task)
+    return task
+
+
+@pytest.fixture(scope="function")
+def test_task_id(test_wbs_task):
+    """返回测试WBS任务ID"""
+    return test_wbs_task.id
+
+
+@pytest.fixture(scope="function")
+def test_approval(db_session, test_user):
+    """创建测试审批"""
+    from app.models import Approval, ApprovalType, ApprovalStatus
+    approval = Approval(
+        type=ApprovalType.LEAVE,
+        title="Test Leave Approval",
+        description="Test approval for leave",
+        applicant_id=test_user.id,
+        status=ApprovalStatus.PENDING,
+        form_data={"reason": "Test"}
+    )
+    db_session.add(approval)
+    db_session.commit()
+    db_session.refresh(approval)
+    return approval
+
+
+@pytest.fixture(scope="function")
+def test_approval_id(test_approval):
+    """返回测试审批ID"""
+    return test_approval.id

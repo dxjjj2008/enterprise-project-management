@@ -1,6 +1,16 @@
 // 全局 API 配置 - 使用原生 fetch
 
-const API_BASE_URL = 'http://localhost:8000/api/v1/'
+// 根据环境动态设置 API 地址
+const getApiBaseUrl = () => {
+  // 如果有 VITE_API_URL 环境变量则使用它
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL
+  }
+  // 默认使用本地后端地址
+  return 'http://localhost:8000/api/v1/'
+}
+
+const API_BASE_URL = getApiBaseUrl()
 
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
@@ -59,10 +69,13 @@ async function apiClient<T = unknown>(
   }
 
   // 发送请求
+  console.log('API请求:', { method, url: `${API_BASE_URL}${url}` })  // 调试日志
   const response = await fetch(`${API_BASE_URL}${url}`, requestOptions)
+  console.log('API响应状态:', response.status)  // 调试日志
 
   // 处理 401 错误
   if (response.status === 401) {
+    console.warn('API 401错误，token可能无效')  // 调试日志
     localStorage.removeItem('auth_token')
     localStorage.removeItem('user_info')
     window.location.href = '/auth/login'

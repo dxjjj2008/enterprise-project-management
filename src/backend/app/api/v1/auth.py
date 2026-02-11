@@ -50,10 +50,10 @@ async def login(
 
 @router.post("/register")
 async def register(
-    username: str,
-    email: str,
-    password: str,
-    full_name: str = None,
+    username: str = Form(...),
+    email: str = Form(...),
+    password: str = Form(...),
+    full_name: str = Form(None),
     db: Session = Depends(get_db)
 ):
     """用户注册"""

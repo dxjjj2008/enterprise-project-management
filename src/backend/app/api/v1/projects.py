@@ -5,8 +5,9 @@
 
 from typing import List, Optional
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Form
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from app.models import (
     User, Project, ProjectMember, Task, Milestone,
@@ -16,6 +17,47 @@ from app.models.database import get_db
 from app.core.security import get_current_user, get_admin_user
 
 router = APIRouter()
+
+
+def generate_project_key(db: Session) -> str:
+    """自动生成项目Key: PJ + 6位流水号"""
+    # 获取最大流水号
+    max_key = db.query(func.max(Project.key)).filter(
+        Project.key.like('PJ%')
+    ).scalar()
+    
+    if max_key:
+        # 提取流水号部分并+1
+        try:
+            num = int(max_key[2:]) + 1  # 去掉"PJ"前缀
+        except ValueError:
+            num = 1
+    else:
+        num = 1
+    
+    # 生成新key，确保6位流水号
+    new_key = f"PJ{num:06d}"
+    
+    # 如果key已存在（并发情况），递归重试
+    existing = db.query(Project).filter(Project.key == new_key).first()
+    if existing:
+        return generate_project_key(db)
+    
+    return new_key
+
+
+@router.get("/next-key")
+async def get_next_project_key(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """获取下一个可用的项目Key（用于前端预览）"""
+    next_key = generate_project_key(db)
+    return {
+        "key": next_key,
+        "format": "PJ######",
+        "description": "项目标识由系统自动生成，格式为PJ+6位流水号"
+    }
 
 
 @router.get("")
@@ -52,30 +94,48 @@ async def get_projects(
     }
 
 
-@router.post("")
-async def create_project(
-    name: str,
-    key: str,
-    description: str = None,
-    start_date: datetime = None,
-    end_date: datetime = None,
+@router.get("/list")
+async def get_projects_list(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """创建新项目"""
-    # 验证项目Key唯一性
-    existing = db.query(Project).filter(Project.key == key.upper()).first()
+    """获取项目列表（下拉框用）"""
+    # 获取用户参与的项目
+    project_ids = db.query(ProjectMember.project_id).filter(
+        ProjectMember.user_id == current_user.id
+    ).all()
     
-    if existing:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Project key already exists"
-        )
+    project_ids = [p[0] for p in project_ids]
     
+    projects = db.query(Project).filter(
+        Project.id.in_(project_ids),
+        Project.is_deleted == False
+    ).all()
+    
+    return {
+        "items": [{"id": p.id, "name": p.name, "key": p.key} for p in projects],
+        "total": len(projects)
+    }
+
+
+@router.post("")
+async def create_project(
+    name: str = Form(...),
+    description: str = Form(None),
+    start_date: datetime = Form(None),
+    end_date: datetime = Form(None),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """创建新项目（自动生成项目Key: PJ + 6位流水号）"""
+
+    # 自动生成项目Key
+    new_key = generate_project_key(db)
+
     # 创建项目
     project = Project(
         name=name,
-        key=key.upper(),
+        key=new_key,
         description=description,
         owner_id=current_user.id,
         start_date=start_date,
@@ -161,11 +221,11 @@ async def get_project(
 @router.put("/{project_id}")
 async def update_project(
     project_id: int,
-    name: str = None,
-    description: str = None,
-    status: ProjectStatus = None,
-    start_date: datetime = None,
-    end_date: datetime = None,
+    name: str = Form(None),
+    description: str = Form(None),
+    status: ProjectStatus = Form(None),
+    start_date: datetime = Form(None),
+    end_date: datetime = Form(None),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -280,8 +340,8 @@ async def get_project_members(
 @router.post("/{project_id}/members")
 async def add_project_member(
     project_id: int,
-    user_id: int,
-    role: UserRole = UserRole.MEMBER,
+    user_id: int = Form(...),
+    role: UserRole = Form(UserRole.MEMBER),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -417,9 +477,9 @@ async def get_project_milestones(
 @router.post("/{project_id}/milestones")
 async def create_milestone(
     project_id: int,
-    name: str,
-    description: str = None,
-    due_date: datetime = None,
+    name: str = Form(...),
+    description: str = Form(None),
+    due_date: datetime = Form(None),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):

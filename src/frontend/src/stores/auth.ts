@@ -1,33 +1,27 @@
-// 认证状态管理
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useLoginMutation, useRegisterMutation, useGetCurrentUserQuery } from '@/api/auth'
 
 export const useAuthStore = defineStore('auth', () => {
-  // 状态
   const token = ref<string | null>(localStorage.getItem('auth_token'))
   const userInfo = ref<any>(JSON.parse(localStorage.getItem('user_info') || '{}'))
   
-  // 计算属性
   const isAuthenticated = computed(() => !!token.value)
   const userRole = computed(() => userInfo.value?.role || 'guest')
   
-  // API hooks
   const { login } = useLoginMutation()
   const { register } = useRegisterMutation()
   const { getCurrentUser } = useGetCurrentUserQuery()
   
-  // 动作
-  const loginAction = async (credentials: { email: string; password: string }) => {
+  const loginAction = async (credentials: { username: string; password: string }) => {
     try {
       const result = await login(credentials).unwrap()
-      token.value = result.data.access_token
-      localStorage.setItem('auth_token', result.data.access_token)
+      token.value = result.access_token
+      localStorage.setItem('auth_token', result.access_token)
       
-      // 获取用户信息
       const user = await getCurrentUser().unwrap()
-      userInfo.value = user.data
-      localStorage.setItem('user_info', JSON.stringify(user.data))
+      userInfo.value = user
+      localStorage.setItem('user_info', JSON.stringify(user))
       
       return result
     } catch (error) {
@@ -38,13 +32,12 @@ export const useAuthStore = defineStore('auth', () => {
   const registerAction = async (userData: { username: string; email: string; password: string }) => {
     try {
       const result = await register(userData).unwrap()
-      token.value = result.data.access_token
-      localStorage.setItem('auth_token', result.data.access_token)
+      const loginResult = await login({ username: userData.username, password: userData.password }).unwrap()
+      token.value = loginResult.access_token
+      localStorage.setItem('auth_token', loginResult.access_token)
       
-      // 获取用户信息
-      const user = await getCurrentUser().unwrap()
-      userInfo.value = user.data
-      localStorage.setItem('user_info', JSON.stringify(user.data))
+      userInfo.value = result.user
+      localStorage.setItem('user_info', JSON.stringify(result.user))
       
       return result
     } catch (error) {
@@ -59,10 +52,8 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('user_info')
   }
   
-  // 初始化
   const initAuth = () => {
     if (token.value && !userInfo.value?.email) {
-      // 尝试获取用户信息
       getCurrentUser()
     }
   }

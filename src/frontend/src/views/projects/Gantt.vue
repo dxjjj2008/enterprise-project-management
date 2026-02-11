@@ -45,13 +45,13 @@
       <!-- 时间轴头部 -->
       <div class="gantt-header">
         <div class="task-name-header">任务名称</div>
-        <div class="timeline-header" :style="{ width: `${timelineWidth}px` }">
+        <div class="timeline-header" :style="{ width: timelineWidth + 'px' }">
           <div class="timeline-months">
             <div
               v-for="month in visibleMonths"
               :key="month.key"
               class="timeline-month"
-              :style="{ width: `${month.days * dayWidth}px` }"
+              :style="{ width: (month.days * dayWidth) + 'px' }"
             >
               {{ month.label }}
             </div>
@@ -62,7 +62,7 @@
               :key="day.date"
               class="timeline-day"
               :class="{ weekend: day.isWeekend }"
-              :style="{ width: `${dayWidth}px` }"
+              :style="{ width: dayWidth + 'px' }"
             >
               {{ day.day }}
             </div>
@@ -74,16 +74,20 @@
       <div class="gantt-body">
         <div class="task-list">
           <div
-            v-for="task in tasks"
+            v-for="task in flatTasks"
             :key="task.id"
             class="task-row"
             :class="{ 'is-group': task.isGroup }"
+            :style="{ paddingLeft: (task.depth * 20 + 20) + 'px' }"
           >
             <div class="task-info">
-              <div class="task-expand" v-if="task.children?.length" @click="toggleTask(task)">
+              <div class="task-expand" v-if="task.children && task.children.length" @click="toggleTask(task)">
                 <el-icon :class="{ expanded: task.expanded }">
                   <ArrowRight />
                 </el-icon>
+              </div>
+              <div class="task-icon" v-else-if="task.isMilestone">
+                <el-icon class="milestone-icon"><Star /></el-icon>
               </div>
               <div class="task-icon" v-else></div>
               <el-checkbox
@@ -96,7 +100,7 @@
               </el-tag>
               <span class="task-name">{{ task.name }}</span>
             </div>
-            <div class="task-timeline" :style="{ width: `${timelineWidth}px` }">
+            <div class="task-timeline" :style="{ width: timelineWidth + 'px' }">
               <!-- 背景网格 -->
               <div class="timeline-grid">
                 <div
@@ -104,42 +108,35 @@
                   :key="day.date"
                   class="grid-cell"
                   :class="{ weekend: day.isWeekend }"
-                  :style="{ width: `${dayWidth}px` }"
+                  :style="{ width: dayWidth + 'px' }"
                 />
               </div>
               <!-- 任务条 -->
               <div
-                v-if="task.startDate && task.endDate"
+                v-if="task.startDate && task.endDate && !task.isMilestone"
                 class="task-bar"
-                :class="[`priority-${task.priority}`, { 'is-milestone': task.isMilestone }]"
+                :class="['priority-' + task.priority, { 'is-milestone': task.isMilestone }]"
                 :style="getTaskBarStyle(task)"
                 @click="editTask(task)"
               >
-                <div class="task-bar-progress" :style="{ width: `${task.progress || 0}%` }" />
-                <span class="task-bar-label" v-if="task.duration > 1">{{ task.name }}</span>
+                <div class="task-bar-progress" :style="{ width: (task.progress || 0) + '%' }" />
+                <span class="task-bar-label" v-if="getTaskDuration(task) > 1">{{ task.name }}</span>
               </div>
               <!-- 里程碑 -->
               <div
                 v-if="task.isMilestone"
                 class="milestone-marker"
-                :style="{ left: `${getMilestonePosition(task.endDate)}px` }"
-              />
-              <!-- 依赖线 -->
-              <svg v-if="task.dependencies?.length" class="dependency-lines">
-                <path
-                  v-for="depId in task.dependencies"
-                  :key="depId"
-                  :d="getDependencyPath(task, depId)"
-                  class="dependency-line"
-                />
-              </svg>
+                :style="{ left: getMilestonePosition(task.endDate) + 'px' }"
+              >
+                <el-icon><Star /></el-icon>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- 今日线 -->
-      <div class="today-line" :style="{ left: `${todayPosition}px` }">
+      <div class="today-line" :style="{ left: todayPosition + 'px' }">
         <div class="today-label">今天</div>
       </div>
     </div>
@@ -168,7 +165,7 @@
 
 <script setup>
 import { ref, computed, reactive, onMounted } from 'vue'
-import { Plus, ZoomIn, ZoomOut, Download, FullScreen, ArrowRight } from '@element-plus/icons-vue'
+import { Plus, ZoomIn, ZoomOut, Download, FullScreen, ArrowRight, Star } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
 // 响应式数据
@@ -176,7 +173,6 @@ const currentProject = ref(1)
 const currentView = ref('week')
 const dayWidth = ref(40)
 const ganttContainer = ref(null)
-const expandedTasks = reactive(new Set())
 
 // 项目列表
 const projects = ref([
@@ -283,7 +279,7 @@ const visibleDays = computed(() => {
   const days = []
   const start = new Date('2026-02-01')
   const end = new Date('2026-03-15')
-  
+
   for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
     days.push({
       date: d.toISOString().split('T')[0],
@@ -297,42 +293,66 @@ const visibleDays = computed(() => {
 const visibleMonths = computed(() => {
   const months = []
   const monthMap = new Map()
-  
+
   visibleDays.value.forEach(day => {
     const [year, month] = day.date.split('-')
-    const key = `${year}-${month}`
+    const key = year + '-' + month
     if (!monthMap.has(key)) {
       monthMap.set(key, {
-        key,
-        label: `${month}月`,
+        key: key,
+        label: month + '月',
         days: 0
       })
     }
-    monthMap.get(key).days++
+    const item = monthMap.get(key)
+    if (item) item.days++
   })
-  
+
   monthMap.forEach(value => months.push(value))
   return months
 })
 
 const timelineWidth = computed(() => visibleDays.value.length * dayWidth.value)
 
+const todayDate = computed(() => {
+  return new Date().toISOString().split('T')[0]
+})
+
 const todayPosition = computed(() => {
-  const today = '2026-02-09'
+  const today = todayDate.value
   const index = visibleDays.value.findIndex(d => d.date === today)
   return index >= 0 ? index * dayWidth.value + dayWidth.value / 2 : 0
 })
 
+// 扁平化任务列表（支持展开/折叠）
+const flatTasks = computed(() => {
+  const result = []
+
+  const processTask = (task, depth = 0) => {
+    result.push({
+      ...task,
+      depth: depth,
+      expanded: expandedTasks.has(task.id)
+    })
+    if (task.children && expandedTasks.has(task.id)) {
+      task.children.forEach(child => processTask(child, depth + 1))
+    }
+  }
+
+  tasks.forEach(task => processTask(task))
+  return result
+})
+
 const completedCount = computed(() => {
-  return tasks.filter(t => !t.isGroup && t.progress === 100).length
+  return flatTasks.value.filter(t => !t.isGroup && t.progress === 100).length
 })
 
 const inProgressCount = computed(() => {
-  return tasks.filter(t => !t.isGroup && t.progress > 0 && t.progress < 100).length
+  return flatTasks.value.filter(t => !t.isGroup && t.progress > 0 && t.progress < 100).length
 })
 
 const overallProgress = computed(() => {
-  const leafTasks = tasks.filter(t => !t.children)
+  const leafTasks = flatTasks.value.filter(t => !t.children || t.children.length === 0)
   if (leafTasks.length === 0) return 0
   const total = leafTasks.reduce((sum, t) => sum + (t.progress || 0), 0)
   return Math.round(total / leafTasks.length)
@@ -349,18 +369,25 @@ const getPriorityLabel = (priority) => {
   return labels[priority] || '-'
 }
 
+const getTaskDuration = (task) => {
+  if (!task.startDate || !task.endDate) return 0
+  const start = new Date(task.startDate)
+  const end = new Date(task.endDate)
+  return Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1
+}
+
 const getTaskBarStyle = (task) => {
   const startIndex = visibleDays.value.findIndex(d => d.date === task.startDate)
   const endIndex = visibleDays.value.findIndex(d => d.date === task.endDate)
-  
+
   if (startIndex === -1) return { display: 'none' }
-  
+
   const left = startIndex * dayWidth.value
   const width = Math.max((endIndex - startIndex + 1) * dayWidth.value, dayWidth.value)
-  
+
   return {
-    left: `${left}px`,
-    width: `${width}px`
+    left: left + 'px',
+    width: width + 'px'
   }
 }
 
@@ -369,13 +396,12 @@ const getMilestonePosition = (date) => {
   return index >= 0 ? index * dayWidth.value + dayWidth.value / 2 : 0
 }
 
-const getDependencyPath = (task, depId) => {
-  // 简化版：返回直线
-  return ''
-}
-
 const toggleTask = (task) => {
-  task.expanded = !task.expanded
+  if (expandedTasks.has(task.id)) {
+    expandedTasks.delete(task.id)
+  } else {
+    expandedTasks.add(task.id)
+  }
 }
 
 const handleTaskSelect = (task) => {
@@ -395,7 +421,7 @@ const createTask = () => {
 }
 
 const editTask = (task) => {
-  ElMessage.info(`编辑任务: ${task.name}`)
+  ElMessage.info('编辑任务: ' + task.name)
 }
 
 const exportGantt = () => {
@@ -404,7 +430,7 @@ const exportGantt = () => {
 
 const toggleFullscreen = () => {
   if (!ganttContainer.value) return
-  
+
   if (document.fullscreenElement) {
     document.exitFullscreen()
   } else {
@@ -417,7 +443,7 @@ onMounted(() => {
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .gantt-page {
   padding: 24px;
   background-color: #f5f7fa;
@@ -431,17 +457,17 @@ onMounted(() => {
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 20px;
-  
-  .page-title {
-    font-size: 24px;
-    font-weight: 600;
-    color: #303133;
-    margin: 0 0 8px 0;
-  }
-  
-  .breadcrumb {
-    font-size: 14px;
-  }
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #303133;
+  margin: 0 0 8px 0;
+}
+
+.breadcrumb {
+  font-size: 14px;
 }
 
 .toolbar {
@@ -453,20 +479,15 @@ onMounted(() => {
   border-radius: 8px;
   margin-bottom: 16px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-  
-  .toolbar-left {
-    display: flex;
-    gap: 12px;
-    
-    .project-select {
-      width: 200px;
-    }
-  }
-  
-  .toolbar-right {
-    display: flex;
-    gap: 8px;
-  }
+}
+
+.toolbar-left {
+  display: flex;
+  gap: 12px;
+}
+
+.project-select {
+  width: 200px;
 }
 
 .gantt-container {
@@ -512,12 +533,11 @@ onMounted(() => {
 
 .timeline-month {
   padding: 8px;
-  text-align: center;
   font-size: 14px;
   font-weight: 500;
-  color: #303133;
-  background-color: #f5f7fa;
+  color: #606266;
   border-right: 1px solid #ebeef5;
+  text-align: center;
 }
 
 .timeline-days {
@@ -526,74 +546,69 @@ onMounted(() => {
 
 .timeline-day {
   padding: 4px;
-  text-align: center;
   font-size: 12px;
-  color: #606266;
-  border-right: 1px solid #ebeef5;
-  
-  &.weekend {
-    background-color: #fafafa;
-    color: #909399;
-  }
+  color: #909399;
+  text-align: center;
+  border-right: 1px solid #f0f2f5;
+}
+
+.timeline-day.weekend {
+  background-color: #fafafa;
+  color: #c0c4cc;
 }
 
 .gantt-body {
-  display: flex;
-}
-
-.task-list {
-  width: 280px;
-  min-width: 280px;
-  position: sticky;
-  left: 0;
-  z-index: 9;
+  position: relative;
 }
 
 .task-row {
   display: flex;
   align-items: center;
-  height: 48px;
-  border-bottom: 1px solid #ebeef5;
-  background-color: #fff;
-  
-  &:hover {
-    background-color: #f5f7fa;
-  }
-  
-  &.is-group {
-    background-color: #fafafa;
-    font-weight: 500;
-  }
+  border-bottom: 1px solid #f0f2f5;
+  transition: background-color 0.2s;
+}
+
+.task-row:hover {
+  background-color: #f5f7fa;
+}
+
+.task-row.is-group {
+  background-color: #fafafa;
+  font-weight: 500;
 }
 
 .task-info {
+  width: 280px;
+  min-width: 280px;
   display: flex;
   align-items: center;
-  width: 280px;
-  padding: 0 16px;
+  padding: 8px 16px;
+  border-right: 1px solid #ebeef5;
+  position: sticky;
+  left: 0;
+  background-color: #fff;
+  z-index: 5;
 }
 
 .task-expand {
-  width: 20px;
-  height: 20px;
+  cursor: pointer;
+  padding: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  margin-right: 4px;
-  
-  .el-icon {
-    transition: transform 0.2s;
-    
-    &.expanded {
-      transform: rotate(90deg);
-    }
-  }
+}
+
+.task-expand .expanded {
+  transform: rotate(90deg);
 }
 
 .task-icon {
   width: 20px;
-  margin-right: 4px;
+  height: 20px;
+}
+
+.milestone-icon {
+  color: #e6a23c;
 }
 
 .task-checkbox {
@@ -605,68 +620,66 @@ onMounted(() => {
 }
 
 .task-name {
-  font-size: 13px;
+  font-size: 14px;
   color: #303133;
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .task-timeline {
   position: relative;
   height: 48px;
+  display: flex;
+  align-items: center;
 }
 
 .timeline-grid {
-  display: flex;
   position: absolute;
   top: 0;
   left: 0;
+  display: flex;
   height: 100%;
 }
 
 .grid-cell {
   height: 100%;
-  border-right: 1px solid #ebeef5;
-  
-  &.weekend {
-    background-color: #fafafa;
-  }
+  border-right: 1px solid #f0f2f5;
+}
+
+.grid-cell.weekend {
+  background-color: #fafafa;
 }
 
 .task-bar {
   position: absolute;
-  top: 10px;
   height: 28px;
   border-radius: 4px;
   cursor: pointer;
-  transition: all 0.2s;
   overflow: hidden;
-  
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  }
-  
-  &.priority-high {
-    background: linear-gradient(90deg, #f56c6c, #e6a23c);
-  }
-  
-  &.priority-medium {
-    background: linear-gradient(90deg, #409eff, #67c23a);
-  }
-  
-  &.priority-low {
-    background: linear-gradient(90deg, #909399, #c0c4cc);
-  }
-  
-  &.is-milestone {
-    width: 20px !important;
-    height: 20px;
-    transform: rotate(45deg);
-    background: #f56c6c;
-    border-radius: 2px;
-  }
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  transition: box-shadow 0.2s;
+}
+
+.task-bar:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.task-bar.priority-high {
+  background: linear-gradient(135deg, #f56c6c 0%, #e6a23c 100%);
+  color: #fff;
+}
+
+.task-bar.priority-medium {
+  background: linear-gradient(135deg, #409eff 0%, #67c23a 100%);
+  color: #fff;
+}
+
+.task-bar.priority-low {
+  background: linear-gradient(135deg, #909399 0%, #606266 100%);
+  color: #fff;
 }
 
 .task-bar-progress {
@@ -678,40 +691,19 @@ onMounted(() => {
 }
 
 .task-bar-label {
-  position: absolute;
-  left: 8px;
-  top: 50%;
-  transform: translateY(-50%);
+  position: relative;
+  z-index: 1;
   font-size: 12px;
-  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .milestone-marker {
   position: absolute;
-  top: 14px;
-  width: 16px;
-  height: 16px;
-  transform: rotate(45deg);
-  background-color: #f56c6c;
-  border: 2px solid #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.dependency-lines {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-.dependency-line {
-  fill: none;
-  stroke: #909399;
-  stroke-width: 1.5;
-  stroke-dasharray: 4;
+  transform: translateX(-50%);
+  color: #e6a23c;
+  font-size: 16px;
 }
 
 .today-line {
@@ -721,57 +713,57 @@ onMounted(() => {
   width: 2px;
   background-color: #f56c6c;
   z-index: 20;
-  
-  .today-label {
-    position: absolute;
-    top: 8px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 11px;
-    color: #f56c6c;
-    white-space: nowrap;
-    background-color: #fef0f0;
-    padding: 2px 6px;
-    border-radius: 4px;
-  }
+}
+
+.today-label {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #f56c6c;
+  color: #fff;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  white-space: nowrap;
 }
 
 .gantt-footer {
   display: flex;
   gap: 32px;
-  padding: 16px 20px;
+  padding: 16px 24px;
   background-color: #fff;
   border-radius: 8px;
   margin-top: 16px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-  
-  .footer-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    
-    .label {
-      font-size: 14px;
-      color: #909399;
-    }
-    
-    .value {
-      font-size: 16px;
-      font-weight: 600;
-      color: #303133;
-      
-      &.completed {
-        color: #67c23a;
-      }
-      
-      &.in-progress {
-        color: #409eff;
-      }
-      
-      &.progress {
-        color: #e6a23c;
-      }
-    }
-  }
+}
+
+.footer-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer-item .label {
+  font-size: 14px;
+  color: #606266;
+}
+
+.footer-item .value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.footer-item .value.completed {
+  color: #67c23a;
+}
+
+.footer-item .value.in-progress {
+  color: #409eff;
+}
+
+.footer-item .value.progress {
+  color: #e6a23c;
 }
 </style>
