@@ -373,8 +373,116 @@ def test_db():
 
 ---
 
-## 10. 相关文档
+## 10. E2E 测试配置
+
+### 10.1 Playwright 安装
+
+```bash
+cd src/frontend
+npm install -D @playwright/test
+npx playwright install chromium
+```
+
+### 10.2 配置文件
+
+创建 `playwright.config.js`:
+
+```javascript
+// playwright.config.js
+export default {
+  testDir: './tests/e2e',
+  timeout: 30000,
+  use: {
+    baseURL: 'http://localhost:3001',
+    trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+  },
+  projects: [
+    { name: 'chromium', use: { browserName: 'chromium' } },
+    { name: 'firefox', use: { browserName: 'firefox' } },
+  ],
+}
+```
+
+### 10.3 E2E 测试示例
+
+```javascript
+// tests/e2e/user-journey.spec.js
+import { test, expect } from '@playwright/test'
+
+test.describe('User Journey', () => {
+  test('login flow', async ({ page }) => {
+    await page.goto('/auth/login')
+    await page.fill('input[name="email"]', 'test@example.com')
+    await page.fill('input[name="password"]', 'test123')
+    await page.click('button[type="submit"]')
+    await expect(page).toHaveURL('/')
+  })
+
+  test('project creation', async ({ page }) => {
+    await page.goto('/projects')
+    await page.click('text=新建项目')
+    await page.fill('input[name="name"]', '测试项目')
+    await page.click('button:has-text("创建")')
+    await expect(page.locator('.el-message')).toContainText('创建成功')
+  })
+})
+```
+
+### 10.4 运行 E2E 测试
+
+```bash
+# 运行所有 E2E 测试
+npm run test:e2e
+
+# 运行特定测试
+npm run test:e2e -- --project=chromium user-journey.spec.js
+
+# 生成测试报告
+npm run test:e2e -- --reporter=html
+```
+
+---
+
+## 11. 测试最佳实践
+
+### 11.1 测试金字塔
+
+```
+        /\
+       /  \
+      /    \     E2E 测试 (5-10%)
+     /______\
+    /        \
+   /          \   集成测试 (20-30%)
+  /____________\
+ /              \
+/                \  单元测试 (60-70%)
+/________________\
+```
+
+### 11.2 测试原则
+
+- **快速**: 单元测试应毫秒级完成
+- **独立**: 每个测试用例独立运行
+- **可重复**: 测试结果应一致
+- **自验证**: 测试应自动判断通过/失败
+- **及时**: 随代码一起提交
+
+### 11.3 覆盖率要求
+
+| 测试类型 | 覆盖率要求 |
+|----------|-----------|
+| 单元测试 | ≥ 80% |
+| 集成测试 | ≥ 60% |
+| E2E 测试 | 关键流程 100% |
+
+---
+
+## 12. 相关文档
 
 - [开发计划](./plans/2026-02-08-development-plan.md)
 - [后端 API 计划](./plans/2026-02-08-backend-api-plan.md)
 - [API 接口文档](../api/2026-02-08-api.md)
+- [测试报告](./2026-02-10-test-report.md)
+- [E2E 测试报告](./2026-02-10-e2e-test-report.md)

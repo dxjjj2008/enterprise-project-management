@@ -1,9 +1,79 @@
 # 企业项目管理系统 - 文档索引
 
-本文档目录提供项目所有文档的索引和说明。
+**版本**: v1.7  
+**更新日期**: 2026-02-11
+
+---
 
 ## 文档目录结构
 
+```
+enterprise-project-management/
+├── README.md                    ← 项目说明
+├── CHANGELOG.md                ← 变更记录
+│
+├── 📁 docs/                    # 项目文档
+│   ├── 📁 plans/               ← 规划文档
+│   │   ├── CHANGELOG.md        ← 变更记录
+│   │   ├── 2026-02-08-development-plan.md
+│   │   └── 2026-02-08-backend-api-plan.md
+│   │
+│   ├── 📁 requirements/         ← 需求文档
+│   │   └── 2026-02-08-requirements.md
+│   │
+│   ├── 📁 design/              ← 设计文档
+│   │   ├── 2026-02-08-architecture.md
+│   │   ├── 2026-02-08-module.md
+│   │   ├── 2026-02-09-architecture-updated.md
+│   │   ├── 2026-02-09-database-design.md
+│   │   ├── 📁 ui-ux/
+│   │   │   └── 2026-02-08-ui-ux-design.md
+│   │   └── 📁 pages/           ← 页面设计
+│   │       ├── 2026-02-08-task-board-plan.md
+│   │       ├── 2026-02-08-task-board-design.md
+│   │       ├── 2026-02-10-approvals-design.md
+│   │       ├── 2026-02-10-approvals-detail.md
+│   │       ├── 2026-02-10-planning-design.md
+│   │       ├── 2026-02-10-planning-management.md
+│   │       ├── 2026-02-10-project-settings.md
+│   │       ├── 2026-02-10-reports-design.md
+│   │       ├── 2026-02-10-resource-management.md
+│   │       ├── 2026-02-10-wbs-edit.md
+│   │       ├── 2026-02-11-gantt-chart-design.md
+│   │       ├── 2026-02-11-issues-design.md
+│   │       └── 2026-02-11-risks-design.md
+│   │
+│   ├── 📁 api/                 ← API 文档
+│   │   └── 2026-02-08-api.md
+│   │
+│   ├── 📁 manual/              ← 用户手册
+│   │   ├── README.md
+│   │   └── 2026-02-08-user-manual.md
+│   │
+│   ├── 📁 database/             ← 数据库设计
+│   │   └── 2026-02-10-database-design.md
+│   │
+│   ├── 📁 testing/             ← 测试文档
+│   │   ├── 2026-02-09-testing-guide.md
+│   │   ├── 2026-02-10-test-plan.md
+│   │   ├── 2026-02-10-test-report.md
+│   │   └── 2026-02-10-e2e-test-report.md
+│   │
+│   └── 📁 optimization/        ← 优化文档
+│       ├── QUICK-START.md
+│       ├── optimization-plan.md
+│       └── docs-consistency-report.md
+│
+└── 📁 src/                     # 源代码
+    ├── 📁 frontend/             ← Vue 3 前端
+    │   ├── 📁 tests/           ← 测试用例
+    │   │   ├── 📁 e2e/        ← E2E 测试
+    │   │   └── 📁 unit/       ← 单元测试
+    │   └── 📁 src/views/       ← 页面组件
+    │
+    └── 📁 backend/              ← FastAPI 后端
+        ├── 📁 tests/           ← 后端测试
+        └── 📁 app/api/v1/     ← API 端点
 ```
 enterprise-project-management/
 ├── README.md                    ← 项目说明
@@ -41,17 +111,80 @@ enterprise-project-management/
 
 ## 文档索引速查
 
-| 类型 | 文档 | 说明 |
-|------|------|------|
-| 规划 | [plans/2026-02-08-development-plan.md](./plans/2026-02-08-development-plan.md) | 开发规划+测试方案 |
-| 规划 | [plans/CHANGELOG.md](./plans/CHANGELOG.md) | 变更记录 |
-| 需求 | [requirements/2026-02-08-requirements.md](./requirements/2026-02-08-requirements.md) | 用户故事、功能需求 |
-| UI/UX | [design/2026-02-08-ui-ux-design.md](./design/2026-02-08-ui-ux-design.md) | 设计规范 |
-| 架构 | [design/2026-02-08-architecture.md](./design/2026-02-08-architecture.md) | 技术架构 |
-| 模块 | [design/2026-02-08-module.md](./design/2026-02-08-module.md) | 模块设计 |
-| API | [api/2026-02-08-api.md](./api/2026-02-08-api.md) | 接口文档 |
-| 手册 | [manual/2026-02-08-user-manual.md](./manual/2026-02-08-user-manual.md) | 用户手册 |
-| 看板 | [design/pages/2026-02-08-task-board-design.md](./design/pages/2026-02-08-task-board-design.md) | 任务看板详细设计 |
+### 规划文档 (plans/)
+
+| 文档 | 说明 |
+|------|------|
+| [plans/2026-02-08-development-plan.md](./plans/2026-02-08-development-plan.md) | 开发规划、里程碑、质量保障 |
+| [plans/2026-02-08-backend-api-plan.md](./plans/2026-02-08-backend-api-plan.md) | 后端 API 规划 |
+| [plans/CHANGELOG.md](./plans/CHANGELOG.md) | 版本变更记录 |
+
+### 需求文档 (requirements/)
+
+| 文档 | 说明 |
+|------|------|
+| [requirements/2026-02-08-requirements.md](./requirements/2026-02-08-requirements.md) | 用户故事、功能需求、非功能需求 |
+
+### 设计文档 (design/)
+
+| 文档 | 说明 |
+|------|------|
+| [design/2026-02-08-architecture.md](./design/2026-02-08-architecture.md) | 系统架构设计 |
+| [design/2026-02-08-module.md](./design/2026-02-08-module.md) | 模块详细设计 |
+| [design/2026-02-09-architecture-updated.md](./design/2026-02-09-architecture-updated.md) | 更新后的架构设计 |
+| [design/2026-02-09-database-design.md](./design/2026-02-09-database-design.md) | 数据库设计 |
+| [design/ui-ux/2026-02-08-ui-ux-design.md](./design/ui-ux/2026-02-08-ui-ux-design.md) | UI/UX 设计规范 |
+
+### 页面设计 (design/pages/)
+
+| 文档 | 说明 |
+|------|------|
+| [design/pages/2026-02-08-task-board-design.md](./design/pages/2026-02-08-task-board-design.md) | 任务看板设计 |
+| [design/pages/2026-02-10-approvals-design.md](./design/pages/2026-02-10-approvals-design.md) | 审批流程设计 |
+| [design/pages/2026-02-10-approvals-detail.md](./design/pages/2026-02-10-approvals-detail.md) | 审批流程详细设计 |
+| [design/pages/2026-02-10-planning-design.md](./design/pages/2026-02-10-planning-design.md) | 计划管理设计 |
+| [design/pages/2026-02-10-planning-management.md](./design/pages/2026-02-10-planning-management.md) | 计划管理详细说明 |
+| [design/pages/2026-02-10-reports-design.md](./design/pages/2026-02-10-reports-design.md) | 报表统计设计 |
+| [design/pages/2026-02-10-resource-management.md](./design/pages/2026-02-10-resource-management.md) | 资源管理设计 |
+| [design/pages/2026-02-10-wbs-edit.md](./design/pages/2026-02-10-wbs-edit.md) | WBS 编辑设计 |
+| [design/pages/2026-02-11-gantt-chart-design.md](./design/pages/2026-02-11-gantt-chart-design.md) | 甘特图设计 |
+| [design/pages/2026-02-11-issues-design.md](./design/pages/2026-02-11-issues-design.md) | 问题跟踪设计 |
+| [design/pages/2026-02-11-risks-design.md](./design/pages/2026-02-11-risks-design.md) | 风险管理设计 |
+
+### API 文档 (api/)
+
+| 文档 | 说明 |
+|------|------|
+| [api/2026-02-08-api.md](./api/2026-02-08-api.md) | RESTful API 接口文档 |
+
+### 用户手册 (manual/)
+
+| 文档 | 说明 |
+|------|------|
+| [manual/2026-02-08-user-manual.md](./manual/2026-02-08-user-manual.md) | 系统使用指南 |
+
+### 测试文档 (testing/)
+
+| 文档 | 说明 |
+|------|------|
+| [testing/2026-02-09-testing-guide.md](./testing/2026-02-09-testing-guide.md) | 测试配置指南 |
+| [testing/2026-02-10-test-plan.md](./testing/2026-02-10-test-plan.md) | 测试计划 |
+| [testing/2026-02-10-test-report.md](./testing/2026-02-10-test-report.md) | 测试报告 |
+| [testing/2026-02-10-e2e-test-report.md](./testing/2026-02-10-e2e-test-report.md) | E2E 测试报告 |
+
+### 数据库设计 (database/)
+
+| 文档 | 说明 |
+|------|------|
+| [database/2026-02-10-database-design.md](./database/2026-02-10-database-design.md) | 数据库设计详细文档 |
+
+### 优化文档 (optimization/)
+
+| 文档 | 说明 |
+|------|------|
+| [optimization/QUICK-START.md](./optimization/QUICK-START.md) | 快速开始指南 |
+| [optimization/optimization-plan.md](./optimization/optimization-plan.md) | 优化计划 |
+| [optimization/docs-consistency-report.md](./optimization/docs-consistency-report.md) | 文档一致性报告 |
 
 ## 文档说明
 
@@ -89,50 +222,98 @@ enterprise-project-management/
 |------|------|
 | 2026-02-08-user-manual.md | 系统使用指南、常见问题 |
 
-## 已开发功能
+## 已开发功能状态
 
-| 模块 | 状态 | 完成度 | 位置 |
-|------|------|--------|------|
-| 首页仪表盘 | ✅ 完成 | 80% | `src/frontend/src/views/dashboard/` |
-| 侧边栏导航 | ✅ 完成 | 100% | `src/frontend/src/views/layout/` |
-| 文档中心 | ✅ 完成 | 100% | `src/frontend/src/views/docs/` |
-| 任务看板 | ✅ 完成 | 100% | `src/frontend/src/views/tasks/` |
-| 项目列表/详情 | 🔶 部分 | 60% | `src/frontend/src/views/projects/` |
-| 甘特图 | ⏳ 待开发 | 5% | `src/frontend/src/views/projects/Gantt.vue` |
-| 资源分配 | ⏳ 待开发 | 0% | `src/frontend/src/views/resources/` |
-| 审批流程 | ⏳ 待开发 | 0% | `src/frontend/src/views/approvals/` |
-| 后端 API | ⏳ 待开发 | 10% | `src/backend/` |
+| 模块 | 后端 API | 前端页面 | 文档 | 状态 |
+|------|----------|----------|------|------|
+| 首页仪表盘 | - | ✅ | ✅ | 完成 |
+| 项目管理 | ✅ | ✅ | ✅ | 完成 |
+| 任务看板 | ✅ | ✅ | ✅ | 完成 |
+| 甘特图 | ✅ | ✅ | ✅ | 完成 |
+| 计划管理 | ✅ | ✅ | ✅ | 完成 |
+| 资源管理 | ✅ | ✅ | ✅ | 完成 |
+| 审批流程 | ✅ | ✅ | ✅ | 完成 |
+| 问题跟踪 | ✅ | ✅ | ✅ | 完成 |
+| 风险管理 | ✅ | ✅ | ✅ | 完成 |
+| 报表统计 | ✅ | ✅ | ✅ | 完成 |
+| 文档中心 | - | ✅ | - | 部分 |
+| 用户认证 | ✅ | ✅ | - | 部分 |
 
 ## 技术栈
 
 ### 前端
-- **框架**: Vue 3 + Composition API
-- **UI 组件**: Element Plus
-- **构建工具**: Vite
-- **状态管理**: Pinia
-- **拖拽库**: vuedraggable / sortablejs
-- **Markdown 渲染**: marked
 
-### 后端（待开发）
-- **框架**: FastAPI
-- **数据库**: SQLite / PostgreSQL
-- **认证**: JWT
+| 技术 | 版本 | 用途 |
+|------|------|------|
+| Vue 3 | 3.4+ | 渐进式框架 |
+| Element Plus | 2.5+ | UI 组件库 |
+| Vite | 5.0+ | 构建工具 |
+| Vue Router | 4.2+ | 路由管理 |
+| Pinia | 2.1+ | 状态管理 |
+| SortableJS | 1.15+ | 拖拽功能 |
+| marked | 9.0+ | Markdown 渲染 |
+| Vitest | 1.0+ | 单元测试 |
+| Playwright | 1.40+ | E2E 测试 |
 
-## 开发里程碑
+### 后端
 
-| 里程碑 | 时间 | 目标 |
-|--------|------|------|
-| M1: 基础就绪 | 第3周末 | 开发环境、CI/CD就绪 |
-| M2: MVP发布 | 第8周末 | 核心功能可用 |
-| M3: Beta发布 | 第13周末 | 全功能模块完成 |
-| M4: 正式发布 | 第15周末 | 生产部署完成 |
+| 技术 | 版本 | 用途 |
+|------|------|------|
+| FastAPI | 0.109+ | Web 框架 |
+| SQLAlchemy | 2.0+ | ORM |
+| SQLite | 3.44+ | 数据库 |
+| PostgreSQL | 15+ | 数据库(可选) |
+| JWT | - | 身份认证 |
+| pytest | 7.4+ | 测试框架 |
+
+## 快速开始
+
+### 前端开发
+
+```bash
+cd src/frontend
+npm install
+npm run dev
+```
+
+### 后端开发
+
+```bash
+cd src/backend
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python main.py
+```
+
+### 运行测试
+
+```bash
+# 前端测试
+cd src/frontend
+npm run test        # 监控模式
+npm run test:run   # 运行一次
+npm run test:e2e   # E2E 测试
+
+# 后端测试
+cd src/backend
+pytest -v
+```
+
+## 访问地址
+
+| 环境 | 地址 | 说明 |
+|------|------|------|
+| 前端开发 | http://localhost:3001 | Vite 开发服务器 |
+| 后端 API | http://localhost:8000 | FastAPI 服务 |
+| API 文档 | http://localhost:8000/docs | Swagger UI |
 
 ## 版本信息
 
 - **项目名称**: 企业项目管理系统
-- **版本**: v1.0
+- **版本**: v1.7
 - **创建日期**: 2026-02-08
-- **最后更新**: 2026-02-08
+- **更新日期**: 2026-02-11
 - **GitHub**: https://github.com/dxjjj2008/enterprise-project-management
 
 ---
