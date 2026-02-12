@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: epms-backend
+  labels:
+    app: epms-backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: epms-backend
+  template:
+    metadata:
+      labels:
+        app: epms-backend
+    spec:
+      containers:
+      - name: backend
+        image: epms-backend:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URL
+          value: "sqlite:///./data/app.db"
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: epms-secrets
+              key: secret-key
+        - name: ACCESS_TOKEN_EXPIRE_MINUTES
+          value: "30"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+        - name: backend-data
+          mountPath: /app/data
+      volumes:
+      - name: backend-data
+        persistentVolumeClaim:
+          claimName: epms-backend-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: epms-backend-service
+spec:
+  selector:
+    app: epms-backend
+  ports:
+  - protocol: TCP
+    port: 8000
+    targetPort: 8000
+  type: ClusterIP

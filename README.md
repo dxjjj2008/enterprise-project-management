@@ -94,31 +94,53 @@ enterprise-project-management/
 - **API 测试**: 所有端点已验证 ✅
 - **测试覆盖率**: 组件级覆盖
 
-### ⏳ 待开发
-| 模块 | 说明 | 优先级 |
-|------|------|--------|
-| CI/CD | GitHub Actions 自动部署 | 🟡 中 |
-| Docker部署 | Docker Compose 一键部署 | 🟡 中 |
-| Redis缓存 | API响应优化 | 🟢 低 |
-| PostgreSQL | 生产环境数据库切换 | 🟢 低 |
-| 移动端适配 | 响应式设计优化 | 🟢 低 |
+### ✅ 部署方案
+| 方案 | 说明 | 状态 |
+|------|------|------|
+| Docker Compose | 一键部署脚本 + 完整文档 | ✅ 已完成 |
+| Kubernetes | K8s 部署配置 | ✅ 已完成 |
+| CI/CD | GitHub Actions 自动部署 | ⏳ 待开发 |
 
 ## 快速开始
 
-### 前端
+### 方式一：Docker Compose 一键部署（推荐）
+
+```bash
+# 1. 克隆项目
+git clone https://github.com/dxjjj2008/enterprise-project-management.git
+cd enterprise-project-management
+
+# 2. 配置环境变量
+cp .env.example .env
+# 编辑 .env 文件，修改 SECRET_KEY
+
+# 3. 一键部署
+bash deploy.sh
+
+# 4. 访问系统
+# 前端: http://localhost
+# 后端 API: http://localhost:8000
+# API 文档: http://localhost:8000/docs
+```
+
+### 方式二：手动部署
+
+#### 前端
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-### 后端
+#### 后端
 ```bash
 cd backend
 pip install -r requirements.txt
-python -m app.core.init_db
+python init_database.py
 bash start.sh
 ```
+
+详细部署文档请参考：[部署指南](./docs/DEPLOYMENT_GUIDE.md)
 
 ### 运行测试
 ```bash
@@ -144,6 +166,8 @@ node tests/e2e/additional-tests.cjs  # 补充测试
 
 | 类型 | 文档 | 说明 |
 |------|------|------|
+| 🚀 部署 | [docs/DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md) | **完整部署指南** |
+| 🚀 部署 | [deployment/README.md](./deployment/README.md) | 部署配置说明 |
 | 需求 | [docs/requirements/2026-02-08-requirements.md](./docs/requirements/2026-02-08-requirements.md) | 用户故事、功能需求 |
 | UI/UX | [docs/design/ui-ux/2026-02-08-ui-ux-design.md](./docs/design/ui-ux/2026-02-08-ui-ux-design.md) | 设计规范 |
 | 架构 | [docs/design/architecture/2026-02-08-project-management-system-design.md](./docs/design/architecture/2026-02-08-project-management-system-design.md) | 技术架构 |
@@ -208,6 +232,7 @@ node tests/e2e/additional-tests.cjs  # 补充测试
 | 2026-02-12 | v1.9 | 优化目录结构，前端后端同级存放 |
 | 2026-02-12 | v2.0 | 完成所有 API 端点、退出登录功能 |
 | 2026-02-12 | v2.1 | 修复登录API、任务看板API、语法错误 |
+| 2026-02-12 | v2.2 | **新增完整部署文档**、后端 Dockerfile、一键部署脚本、K8s 配置 |
 
 ## 许可证
 

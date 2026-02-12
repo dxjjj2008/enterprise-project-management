@@ -7,18 +7,18 @@ services:
   # 后端服务
   backend:
     build:
-      context: ./src/backend
+      context: ../backend
       dockerfile: Dockerfile
     container_name: epms-backend
     restart: unless-stopped
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=sqlite:///./app.db
-      - SECRET_KEY=your-secret-key-change-in-production
+      - DATABASE_URL=sqlite:///./data/app.db
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-change-in-production}
       - ACCESS_TOKEN_EXPIRE_MINUTES=30
     volumes:
-      - backend_data:/app
+      - backend_data:/app/data
     networks:
       - epms-network
     healthcheck:
@@ -30,27 +30,18 @@ services:
   # 前端服务
   frontend:
     build:
-      context: ./src/frontend
+      context: ../frontend
       dockerfile: Dockerfile
     container_name: epms-frontend
     restart: unless-stopped
-    ports:
-      - "3002:3002"
     environment:
-      - VITE_API_URL=http://localhost:8000
-    volumes:
-      - frontend_dist:/dist
+      - VITE_API_BASE_URL=http://localhost:8000
     networks:
       - epms-network
     depends_on:
       - backend
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3002"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
-  # Nginx反向代理（生产环境推荐）
+  # Nginx反向代理
   nginx:
     image: nginx:alpine
     container_name: epms-nginx
@@ -59,8 +50,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./deployment/nginx.conf:/etc/nginx/nginx.conf:ro
-      - frontend_dist:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
     networks:
       - epms-network
     depends_on:

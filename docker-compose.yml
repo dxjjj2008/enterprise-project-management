@@ -36,7 +36,7 @@ services:
   # 后端 API 服务
   backend:
     build:
-      context: ./src/backend
+      context: ./backend
       dockerfile: Dockerfile
     container_name: epm-backend
     environment:
@@ -53,13 +53,13 @@ services:
       redis:
         condition: service_healthy
     volumes:
-      - ./src/backend:/app
+      - ./backend:/app
       - backend_logs:/app/logs
 
   # 前端 Nginx 服务
   frontend:
     build:
-      context: ./src/frontend
+      context: ./frontend
       dockerfile: Dockerfile
       args:
         - VITE_API_BASE_URL=http://localhost:8000
