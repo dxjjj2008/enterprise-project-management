@@ -38,9 +38,9 @@ class TaskBase(BaseModel):
     assigned_to: Optional[str] = None
     due_date: Optional[datetime] = None
 
-# 任务创建模型
+# 任务创建模型（不含project_id，从URL路径获取）
 class TaskCreate(TaskBase):
-    project_id: int
+    pass
 
 # 任务更新模型
 class TaskUpdate(TaskBase):

@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 # 导入路由
-from app.routers import auth, projects
+from app.routers import auth, projects, tasks, gantt, planning, resources, issues, risks, approvals, reports
 
 # 创建 FastAPI 应用实例
 app = FastAPI(
@@ -40,3 +40,12 @@ async def root():
 # 包含路由
 app.include_router(auth.router)
 app.include_router(projects.router)
+app.include_router(tasks.router)
+app.include_router(tasks.tasks_router)  # 全局任务路由
+app.include_router(gantt.router)
+app.include_router(planning.router)
+app.include_router(resources.router)
+app.include_router(issues.router)
+app.include_router(risks.router)
+app.include_router(approvals.router)
+app.include_router(reports.router)
