@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, Request
+from fastapi.responses import JSONResponse
+from fastapi.security import OAuth2PasswordBearer
 from typing import Optional, Annotated
 from datetime import timedelta
 
@@ -10,6 +11,7 @@ from app.schemas.common import ResponseModel, ErrorResponse
 # 导入数据库相关
 from app.core.database import get_db
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from app.models.user import User
 
 # 导入密码哈希
@@ -21,9 +23,6 @@ from app.core.security import verify_password, get_password_hash, create_access_
 # 密码上下文
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# OAuth2 密码流配置
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
-
 # 创建认证路由器
 router = APIRouter(
     prefix="/api/v1/auth",
@@ -34,20 +33,52 @@ router = APIRouter(
 # OAuth2 密码流配置
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
 
-# 登录端点
+# 登录端点 - 同时支持 JSON 和表单格式
 @router.post("/login", response_model=ResponseModel[Token])
 async def login(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    request: Request,
     db: Session = Depends(get_db)
 ):
     """
     用户登录
     
+    支持两种请求格式：
+    1. JSON格式: {"username": "...", "password": "..."}
+    2. 表单格式: username=...&password=...
+    
     返回 JWT 访问令牌
     """
-    # 查询数据库验证用户
-    user = db.query(User).filter(User.email == form_data.username).first()
-    if not user or not verify_password(form_data.password, user.hashed_password):
+    # 解析请求数据
+    content_type = request.headers.get('content-type', '')
+    username = None
+    password = None
+    
+    if 'application/json' in content_type:
+        # JSON 格式
+        try:
+            json_data = await request.json()
+            username = json_data.get('username')
+            password = json_data.get('password')
+        except:
+            pass
+    else:
+        # 表单格式
+        form_data = await request.form()
+        username = form_data.get('username')
+        password = form_data.get('password')
+    
+    # 验证参数
+    if not username or not password:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="用户名和密码不能为空",
+        )
+    
+    # 查询数据库验证用户（支持email或username登录）
+    user = db.query(User).filter(
+        or_(User.email == username, User.username == username)
+    ).first()
+    if not user or not verify_password(password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="邮箱或密码错误",

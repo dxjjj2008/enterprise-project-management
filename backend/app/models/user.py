@@ -1,9 +1,7 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime
-from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 
-# 创建基类
-Base = declarative_base()
+from app.core.database import Base
 
 # 用户模型
 class User(Base):
