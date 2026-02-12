@@ -1,0 +1,86 @@
+{
+  "timestamp": "2026-02-12T05:14:34.187Z",
+  "summary": {
+    "total": 15,
+    "passed": 15,
+    "failed": 0,
+    "passRate": "100.0%"
+  },
+  "results": [
+    {
+      "test": "API健康检查",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "仪表盘页面加载",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "项目页面加载",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "任务页面加载",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "文档页面加载",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "注册页面加载",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "登录页面加载",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "用户注册流程",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "用户登录流程",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "用户登出流程",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "创建项目",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "项目列表查看",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "任务页面加载",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "创建任务",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "页面导航测试",
+      "status": "PASS",
+      "message": "测试通过"
+    }
+  ]
+}

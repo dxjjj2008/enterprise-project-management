@@ -1,0 +1,71 @@
+{
+  "timestamp": "2026-02-12T08:48:45.282Z",
+  "summary": {
+    "total": 12,
+    "passed": 11,
+    "failed": 1,
+    "passRate": "91.7%"
+  },
+  "results": [
+    {
+      "test": "任务编辑",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "任务删除",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "任务详情查看",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "甘特图页面",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "计划管理页面",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "资源管理页面",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "审批流程页面",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "报表统计页面",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "设置页面",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "问题跟踪页面",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "风险管理页面",
+      "status": "PASS",
+      "message": "测试通过"
+    },
+    {
+      "test": "退出登录",
+      "status": "FAIL",
+      "message": "locator.isVisible: Unexpected token \"=\" while parsing css selector \".el-dropdown-menu__item:has-text(\"退出\"), text=退出登录\". Did you mean to CSS.escape it?\nCall log:\n\u001b[2m    - checking visibility of .el-dropdown-menu__item:has-text(\"退出\"), text=退出登录 >> nth=0\u001b[22m\n"
+    }
+  ]
+}
